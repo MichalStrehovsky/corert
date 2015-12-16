@@ -2,10 +2,12 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Collections.Generic;
 using System.Reflection.Metadata;
 using Internal.NativeFormat;
 
 using Debug = System.Diagnostics.Debug;
+using GenericParameterAttributes = System.Reflection.GenericParameterAttributes;
 
 namespace Internal.TypeSystem.Ecma
 {
@@ -85,6 +87,71 @@ namespace Internal.TypeSystem.Ecma
             {
                 GenericParameter parameter = _module.MetadataReader.GetGenericParameter(_handle);
                 return parameter.Index;
+            }
+        }
+
+        public override bool IsCovariant
+        {
+            get
+            {
+                GenericParameter parameter = _module.MetadataReader.GetGenericParameter(_handle);
+                return (parameter.Attributes & GenericParameterAttributes.Covariant) != 0;
+            }
+        }
+
+        public override bool IsContravariant
+        {
+            get
+            {
+                GenericParameter parameter = _module.MetadataReader.GetGenericParameter(_handle);
+                return (parameter.Attributes & GenericParameterAttributes.Contravariant) != 0;
+            }
+        }
+
+        public override bool HasReferenceTypeConstraint
+        {
+            get
+            {
+                GenericParameter parameter = _module.MetadataReader.GetGenericParameter(_handle);
+                return (parameter.Attributes & GenericParameterAttributes.ReferenceTypeConstraint) != 0;
+            }
+        }
+
+        public override bool HasDefaultConstructorConstraint
+        {
+            get
+            {
+                GenericParameter parameter = _module.MetadataReader.GetGenericParameter(_handle);
+                return (parameter.Attributes & GenericParameterAttributes.DefaultConstructorConstraint) != 0;
+            }
+        }
+
+        public override bool HasValueTypeConstraint
+        {
+            get
+            {
+                GenericParameter parameter = _module.MetadataReader.GetGenericParameter(_handle);
+                return (parameter.Attributes & GenericParameterAttributes.NotNullableValueTypeConstraint) != 0;
+            }
+        }
+
+        public override IEnumerable<TypeDesc> Constraints
+        {
+            get
+            {
+                MetadataReader reader = _module.MetadataReader;
+
+                GenericParameter parameter = reader.GetGenericParameter(_handle);
+                GenericParameterConstraintHandleCollection constraintHandles = parameter.GetConstraints();
+                TypeDesc[] constraintTypes = new TypeDesc[constraintHandles.Count];
+
+                for (int i = 0; i < constraintTypes.Length; i++)
+                {
+                    GenericParameterConstraint constraint = reader.GetGenericParameterConstraint(constraintHandles[i]);
+                    constraintTypes[i] = _module.GetType(constraint.Type);
+                };
+
+                return constraintTypes;
             }
         }
 
