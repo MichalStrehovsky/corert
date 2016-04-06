@@ -166,6 +166,7 @@ namespace ILCompiler
             _compilationModuleGroup.AddWellKnownTypes();
             _compilationModuleGroup.AddCompilationRoots();
 
+#if false
             if (!_options.IsCppCodeGen && !_options.MultiFile)
             {
                 // TODO: build a general purpose way to hook up pieces that would be part of the core library
@@ -175,6 +176,7 @@ namespace ILCompiler
                 var exec = refExec.GetKnownType("Internal.Reflection.Execution", "ReflectionExecution");
                 AddCompilationRoot(exec.GetStaticConstructor(), "Reflection execution");
             }
+#endif
 
             if (_options.IsCppCodeGen)
             {

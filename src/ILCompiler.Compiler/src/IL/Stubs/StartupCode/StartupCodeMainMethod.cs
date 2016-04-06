@@ -50,6 +50,7 @@ namespace Internal.IL.Stubs.StartupCode
             ILEmitter emitter = new ILEmitter();
             ILCodeStream codeStream = emitter.NewCodeStream();
 
+#if false
             MetadataType startup = Context.GetHelperType("StartupCodeHelpers");
 
             // Initialize command line args
@@ -67,6 +68,7 @@ namespace Internal.IL.Stubs.StartupCode
                 TypeDesc environ = Context.SystemModule.GetKnownType("System", "Environment");
                 codeStream.Emit(ILOpcode.call, emitter.NewToken(environ.GetKnownMethod("GetCommandLineArgs", null)));
             }
+#endif
             codeStream.Emit(ILOpcode.call, emitter.NewToken(_mainMethod));
             if (_mainMethod.Signature.ReturnType.IsVoid)
             {

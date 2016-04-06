@@ -16,6 +16,12 @@ using global::Internal.Metadata.NativeFormat;
 
 using ReflectionMapBlob = Internal.Runtime.ReflectionMapBlob;
 
+namespace Internal.IntrinsicSupport
+{
+    public class EqualityComparerHelpers { }
+    public class ComparerHelpers { }
+}
+
 namespace Internal.Reflection.Execution
 {
     internal sealed partial class ExecutionEnvironmentImplementation : ExecutionEnvironment
@@ -27,6 +33,8 @@ namespace Internal.Reflection.Execution
 
         public unsafe ExecutionEnvironmentImplementation()
         {
+            new Internal.Reflection.ExplicitScopeAttribute("");
+
             _moduleToMetadataReader = new LowLevelDictionaryWithIEnumerable<IntPtr, MetadataReader>();
             
             // Metadata reader must be creater first as other callbacks might need it
