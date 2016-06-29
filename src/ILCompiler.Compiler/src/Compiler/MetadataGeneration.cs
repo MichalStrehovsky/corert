@@ -29,7 +29,6 @@ namespace ILCompiler
         private byte[] _metadataBlob;
         private List<MetadataMapping<MetadataType>> _typeMappings = new List<MetadataMapping<MetadataType>>();
 
-        private HashSet<ModuleDesc> _modulesSeen = new HashSet<ModuleDesc>();
         private HashSet<MetadataType> _typeDefinitionsGenerated = new HashSet<MetadataType>();
 
         public void AttachToDependencyGraph(DependencyAnalyzerBase<NodeFactory> graph)
@@ -80,7 +79,6 @@ namespace ILCompiler
                 if (mdType != null)
                 {
                     _typeDefinitionsGenerated.Add(mdType);
-                    _modulesSeen.Add(mdType.Module);
                 }
             }
             else if (type.HasInstantiation)
@@ -98,7 +96,7 @@ namespace ILCompiler
             if (_metadataBlob != null)
                 return;
 
-            var transformed = MetadataTransform.Run(new DummyMetadataPolicy(this), _modulesSeen);
+            var transformed = MetadataTransform.Run(new DummyMetadataPolicy(this), _typeDefinitionsGenerated);
 
             // TODO: DeveloperExperienceMode: Use transformed.Transform.HandleType() to generate
             //       TypeReference records for _typeDefinitionsGenerated that don't have metadata.

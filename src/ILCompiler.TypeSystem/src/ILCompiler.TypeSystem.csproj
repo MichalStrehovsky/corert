@@ -68,6 +68,9 @@
     <Compile Include="..\..\Common\src\TypeSystem\CodeGen\MethodDesc.CodeGen.cs">
       <Link>TypeSystem\CodeGen\MethodDesc.CodeGen.cs</Link>
     </Compile>
+    <Compile Include="..\..\Common\src\TypeSystem\CodeGen\ModuleDesc.CodeGen.cs">
+      <Link>TypeSystem\CodeGen\ModuleDesc.CodeGen.cs</Link>
+    </Compile>
     <Compile Include="..\..\Common\src\TypeSystem\Common\AlignmentHelper.cs">
       <Link>Utilities\AlignmentHelper.cs</Link>
     </Compile>
@@ -235,6 +238,9 @@
     </Compile>
     <Compile Include="..\..\Common\src\TypeSystem\Ecma\EcmaGenericParameter.Canon.cs">
       <Link>Ecma\EcmaGenericParameter.Canon.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Common\src\TypeSystem\Ecma\EcmaModule.CodeGen.cs">
+      <Link>Ecma\EcmaModule.CodeGen.cs</Link>
     </Compile>
     <Compile Include="..\..\Common\src\TypeSystem\Ecma\EcmaModule.Symbols.cs">
       <Link>Ecma\EcmaModule.Symbols.cs</Link>

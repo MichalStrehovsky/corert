@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using Internal.Metadata.NativeFormat.Writer;
 
 using Cts = Internal.TypeSystem;
+using Debug = System.Diagnostics.Debug;
 
 namespace ILCompiler.Metadata
 {
@@ -45,6 +46,20 @@ namespace ILCompiler.Metadata
                         transform.HandleType(type);
                     }
                 }
+            }
+
+            return new MetadataTransformResult<TPolicy>(transform);
+        }
+
+        public static MetadataTransformResult<TPolicy> Run<TPolicy>(TPolicy policy, IEnumerable<Cts.MetadataType> types)
+            where TPolicy : struct, IMetadataPolicy
+        {
+            var transform = new Transform<TPolicy>(policy);
+
+            foreach (var type in types)
+            {
+                Debug.Assert(!policy.IsBlocked(type));
+                transform.HandleType(type);
             }
 
             return new MetadataTransformResult<TPolicy>(transform);
