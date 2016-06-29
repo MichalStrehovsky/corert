@@ -1546,7 +1546,7 @@ namespace Internal.JitInterface
                 return;
             }
 
-            List<DebugLocInfo> debugLocInfos = new List<DebugLocInfo>();
+            ArrayBuilder<DebugLocInfo> debugLocInfos = new ArrayBuilder<DebugLocInfo>();
             for (int i = 0; i < cMap; i++)
             {
                 SequencePoint s;
