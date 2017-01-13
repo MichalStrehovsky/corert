@@ -2662,6 +2662,14 @@ namespace Internal.JitInterface
                     if (targetMethod.IsSharedByGenericInstantiations && !inlining)
                     {
                         MethodDesc runtimeDeterminedMethod = (MethodDesc)GetRuntimeDeterminedObjectForToken(ref pResolvedToken);
+
+                        if (resolvedConstraint)
+                        {
+                            TypeDesc runtimeDeterminedConstrainedType = (TypeDesc)GetRuntimeDeterminedObjectForToken(ref *pConstrainedResolvedToken);
+                            runtimeDeterminedMethod = runtimeDeterminedConstrainedType.GetClosestDefType().TryResolveConstraintMethodApprox(runtimeDeterminedMethod.OwningType, runtimeDeterminedMethod, out forceUseRuntimeLookup);
+                            Debug.Assert(runtimeDeterminedMethod.GetCanonMethodTarget(CanonicalFormKind.Specific) == targetMethod);
+                        }
+
                         pResult.codePointerOrStubLookup.constLookup.addr = (void*)ObjectToHandle(
                             _compilation.NodeFactory.RuntimeDeterminedMethod(runtimeDeterminedMethod));
                     }
