@@ -64,6 +64,13 @@ namespace ILCompiler.DependencyAnalysis
 
         public EETypeNode(NodeFactory factory, TypeDesc type)
         {
+            if (type.ToString().Contains("EventHandler"))
+            {
+                int i = 0;
+                i++;
+            }
+
+
             if (type.IsCanonicalDefinitionType(CanonicalFormKind.Any))
                 Debug.Assert(this is CanonicalDefinitionEETypeNode);
             else if (type.IsCanonicalSubtype(CanonicalFormKind.Any))

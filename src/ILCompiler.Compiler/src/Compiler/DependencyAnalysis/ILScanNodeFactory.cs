@@ -4,6 +4,7 @@
 
 using System;
 
+using ILCompiler.DependencyAnalysisFramework;
 using Internal.TypeSystem;
 
 using Debug = System.Diagnostics.Debug;
@@ -13,11 +14,37 @@ namespace ILCompiler.DependencyAnalysis
     /// <summary>
     /// Node factory to be used during IL scanning.
     /// </summary>
-    public sealed class ILScanNodeFactory : NodeFactory
+    internal sealed class ILScanNodeFactory : NodeFactory
     {
-        public ILScanNodeFactory(CompilerTypeSystemContext context, CompilationModuleGroup compilationModuleGroup, MetadataManager metadataManager, NameMangler nameMangler)
+        private readonly ILScanningOptions _options;
+
+        public ILScanNodeFactory(CompilerTypeSystemContext context, CompilationModuleGroup compilationModuleGroup, MetadataManager metadataManager, NameMangler nameMangler, ILScanningOptions options)
             : base(context, compilationModuleGroup, metadataManager, nameMangler, new LazyGenericsDisabledPolicy())
         {
+            _options = options;
+
+            _typesWithMetadata = new NodeCache<MetadataType, TypeMetadataNode>(type =>
+            {
+                return new TypeMetadataNode(type);
+            });
+
+            _methodsWithMetadata = new NodeCache<MethodDesc, MethodMetadataNode>(method =>
+            {
+                return new MethodMetadataNode(method);
+            });
+
+            _modulesWithMetadata = new NodeCache<ModuleDesc, ModuleMetadataNode>(module =>
+            {
+                return new ModuleMetadataNode(module);
+            });
+        }
+
+        public bool IsScanningForReflectionRoots
+        {
+            get
+            {
+                return (_options & ILScanningOptions.ScanForReflectionRoots) != 0;
+            }
         }
 
         protected override IMethodNode CreateMethodEntrypointNode(MethodDesc method)
@@ -76,5 +103,50 @@ namespace ILCompiler.DependencyAnalysis
         {
             return new ReadyToRunHelperNode(this, helperCall.HelperId, helperCall.Target);
         }
+
+        /// <summary>
+        /// Gets a node that ensures the method will be tracked as compiled and reflectable.
+        /// </summary>
+        public IDependencyNode<NodeFactory> ScannedMethod(MethodDesc method)
+        {
+            Debug.Assert(IsScanningForReflectionRoots);
+            Debug.Assert(!MetadataManager.IsReflectionBlocked(method));
+
+            // Methods that don't have a body generated need to be tracked through a special mechanism.
+            if (ReflectableMethodNode.ShouldTrackMethod(method))
+            {
+                return ReflectableMethod(method);
+            }
+
+            return CanonicalEntrypoint(method);
+        }
+
+        private NodeCache<MetadataType, TypeMetadataNode> _typesWithMetadata;
+
+        public TypeMetadataNode TypeMetadata(MetadataType type)
+        {
+            return _typesWithMetadata.GetOrAdd(type);
+        }
+
+        private NodeCache<MethodDesc, MethodMetadataNode> _methodsWithMetadata;
+
+        public MethodMetadataNode MethodMetadata(MethodDesc method)
+        {
+            return _methodsWithMetadata.GetOrAdd(method);
+        }
+
+        private NodeCache<ModuleDesc, ModuleMetadataNode> _modulesWithMetadata;
+
+        public ModuleMetadataNode ModuleMetadata(ModuleDesc module)
+        {
+            return _modulesWithMetadata.GetOrAdd(module);
+        }
+    }
+
+    [Flags]
+    internal enum ILScanningOptions
+    {
+        None = 0,
+        ScanForReflectionRoots = 0x1,
     }
 }

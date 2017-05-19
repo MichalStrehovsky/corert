@@ -105,6 +105,15 @@ namespace ILCompiler.DependencyAnalysis
                         "Reflection virtual invoke owning type");
                 }
 
+                // If this is a virtual method and we're tracking virtual method use, report a dependency.
+                // The method should be considered virtually used even if the IL doesn't actually call it virtually
+                // because the mapping table needs the slot number.
+                if (!method.HasInstantiation && !factory.CompilationModuleGroup.ShouldProduceFullVTable(method.OwningType))
+                {
+                    MethodDesc slotDefiningMethod = MetadataVirtualMethodAlgorithm.FindSlotDefiningMethodForVirtualMethod(method);
+                    dependencies.Add(factory.VirtualMethodUse(slotDefiningMethod), "Reflection");
+                }
+
                 NativeLayoutMethodNameAndSignatureVertexNode nameAndSig = factory.NativeLayout.MethodNameAndSignatureVertex(method.GetTypicalMethodDefinition());
                 NativeLayoutPlacedSignatureVertexNode placedNameAndSig = factory.NativeLayout.PlacedSignatureVertex(nameAndSig);
                 dependencies.Add(placedNameAndSig, "Reflection virtual invoke method signature");

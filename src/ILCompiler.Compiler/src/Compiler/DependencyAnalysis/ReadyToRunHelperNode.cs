@@ -143,14 +143,7 @@ namespace ILCompiler.DependencyAnalysis
                 DependencyList dependencyList = new DependencyList();
 
 #if !SUPPORT_JIT
-                // TODO: https://github.com/dotnet/corert/issues/3224 
-                if (targetMethod.IsAbstract)
-                {
-                    dependencyList.Add(factory.ReflectableMethod(targetMethod), "Abstract reflectable method");
-                }
-
                 if (!factory.CompilationModuleGroup.ShouldProduceFullVTable(targetMethod.OwningType))
-
                 {
                     dependencyList.Add(factory.VirtualMethodUse((MethodDesc)_target), "ReadyToRun Virtual Method Call");
                 }
@@ -167,12 +160,6 @@ namespace ILCompiler.DependencyAnalysis
 
                     DependencyList dependencyList = new DependencyList();
 #if !SUPPORT_JIT
-                    // TODO: https://github.com/dotnet/corert/issues/3224 
-                    if (targetMethod.IsAbstract)
-                    {
-                        dependencyList.Add(factory.ReflectableMethod(targetMethod), "Abstract reflectable method");
-                    }
-
                     if (!factory.CompilationModuleGroup.ShouldProduceFullVTable(info.TargetMethod.OwningType))
                     {
                         dependencyList.Add(factory.VirtualMethodUse(info.TargetMethod), "ReadyToRun Delegate to virtual method");

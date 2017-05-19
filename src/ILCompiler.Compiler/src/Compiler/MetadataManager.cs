@@ -37,6 +37,7 @@ namespace ILCompiler
 
         protected readonly CompilationModuleGroup _compilationModuleGroup;
         protected readonly CompilerTypeSystemContext _typeSystemContext;
+        private readonly MetadataBlockingPolicy _blockingPolicy;
 
         private List<NonGCStaticsNode> _cctorContextsGenerated = new List<NonGCStaticsNode>();
         private HashSet<TypeDesc> _typesWithEETypesGenerated = new HashSet<TypeDesc>();
@@ -48,10 +49,11 @@ namespace ILCompiler
         internal NativeLayoutInfoNode NativeLayoutInfo { get; private set; }
         internal DynamicInvokeTemplateDataNode DynamicInvokeTemplateData { get; private set; }
 
-        public MetadataManager(CompilationModuleGroup compilationModuleGroup, CompilerTypeSystemContext typeSystemContext)
+        public MetadataManager(CompilationModuleGroup compilationModuleGroup, CompilerTypeSystemContext typeSystemContext, MetadataBlockingPolicy blockingPolicy)
         {
             _compilationModuleGroup = compilationModuleGroup;
             _typeSystemContext = typeSystemContext;
+            _blockingPolicy = blockingPolicy;
         }
 
         public void AttachToDependencyGraph(DependencyAnalyzerBase<NodeFactory> graph)
@@ -170,12 +172,6 @@ namespace ILCompiler
                 return;
             }
 
-            var reflectableMethodNode = obj as ReflectableMethodNode;
-            if (reflectableMethodNode != null)
-            {
-                _methodsGenerated.Add(reflectableMethodNode.Method);
-            }
-
             var nonGcStaticSectionNode = obj as NonGCStaticsNode;
             if (nonGcStaticSectionNode != null && _typeSystemContext.HasLazyStaticConstructor(nonGcStaticSectionNode.Type))
             {
@@ -267,6 +263,12 @@ namespace ILCompiler
             if (method.OwningType.IsDelegate && method.IsConstructor)
                 return false;
 
+            if (method.IsFinalizer)
+                return false;
+
+            if (method.IsConstructor && method.OwningType.IsString)
+                return false;
+
             // Everything else should get a stub.
             return true;
         }
@@ -287,19 +289,22 @@ namespace ILCompiler
         /// </summary>
         public void GetDependenciesDueToReflectability(ref DependencyList dependencies, NodeFactory factory, MethodDesc method)
         {
-            MetadataCategory category = GetMetadataCategory(method);
-
-            if ((category & MetadataCategory.Description) != 0)
+            if (!IsReflectionBlocked(method))
             {
-                GetMetadataDependenciesDueToReflectability(ref dependencies, factory, method);
-            }
+                MetadataCategory category = GetMetadataCategory(method);
 
-            if ((category & MetadataCategory.RuntimeMapping) != 0)
-            {
-                if (IsReflectionInvokable(method))
+                if ((category & MetadataCategory.Description) != 0)
                 {
-                    // We're going to generate a mapping table entry for this. Collect dependencies.
-                    CodeBasedDependencyAlgorithm.AddDependenciesDueToReflectability(ref dependencies, factory, method);
+                    GetMetadataDependenciesDueToReflectability(ref dependencies, factory, method);
+                }
+
+                if ((category & MetadataCategory.RuntimeMapping) != 0)
+                {
+                    if (IsReflectionInvokable(method))
+                    {
+                        // We're going to generate a mapping table entry for this. Collect dependencies.
+                        CodeBasedDependencyAlgorithm.AddDependenciesDueToReflectability(ref dependencies, factory, method);
+                    }
                 }
             }
         }
@@ -316,19 +321,22 @@ namespace ILCompiler
         /// </summary>
         public void GetDependenciesDueToReflectability(ref DependencyList dependencies, NodeFactory factory, TypeDesc type)
         {
-            MetadataCategory category = GetMetadataCategory(type);
-
-            if ((category & MetadataCategory.Description) != 0)
+            if (!IsReflectionBlocked(type))
             {
-                GetMetadataDependenciesDueToReflectability(ref dependencies, factory, type);
-            }
+                MetadataCategory category = GetMetadataCategory(type);
 
-            if ((category & MetadataCategory.RuntimeMapping) != 0)
-            {
-                // We're going to generate a mapping table entry for this. Collect dependencies.
+                if ((category & MetadataCategory.Description) != 0)
+                {
+                    GetMetadataDependenciesDueToReflectability(ref dependencies, factory, type);
+                }
 
-                // Nothing for now - the mapping table only refers to the EEType and we already generated one because
-                // we got the callback.
+                if ((category & MetadataCategory.RuntimeMapping) != 0)
+                {
+                    // We're going to generate a mapping table entry for this. Collect dependencies.
+
+                    // Nothing for now - the mapping table only refers to the EEType and we already generated one because
+                    // we got the callback.
+                }
             }
         }
 
@@ -540,9 +548,65 @@ namespace ILCompiler
             return _typesWithConstructedEETypesGenerated;
         }
 
-        public abstract bool IsReflectionBlocked(MetadataType type);
+        public bool IsReflectionBlocked(TypeDesc type)
+        {
+            switch (type.Category)
+            {
+                case TypeFlags.SzArray:
+                case TypeFlags.Array:
+                case TypeFlags.Pointer:
+                case TypeFlags.ByRef:
+                    return IsReflectionBlocked(((ParameterizedType)type).ParameterType);
 
+                case TypeFlags.FunctionPointer:
+                    throw new NotImplementedException();
+
+                default:
+                    Debug.Assert(type.IsDefType);
+
+                    TypeDesc typeDefinition = type.GetTypeDefinition();
+                    if (type != typeDefinition)
+                    {
+                        if (_blockingPolicy.IsBlocked((MetadataType)typeDefinition))
+                            return true;
+
+                        foreach (var arg in type.Instantiation)
+                            if (IsReflectionBlocked(arg))
+                                return true;
+
+                        return false;
+                    }
+
+                    return _blockingPolicy.IsBlocked((MetadataType)type);
+            }
+        }
+
+        public bool IsReflectionBlocked(MethodDesc method)
+        {
+            return _blockingPolicy.IsBlocked(method);
+        }
+
+        public bool GeneratesMetadata(TypeDesc type)
+        {
+            return (GetMetadataCategory(type) & MetadataCategory.Description) != 0;
+        }
+        
+        /// <summary>
+        /// Gets the metadata category for a compiled method body in the current compilation.
+        /// The method will only get called with '<paramref name="method"/>' that has a compiled method body
+        /// in this compilation.
+        /// Note that if this method doesn't return <see cref="MetadataCategory.Description"/>, it doesn't mean
+        /// that the method never has metadata. The metadata might just be generated in a different compilation.
+        /// </summary>
         protected abstract MetadataCategory GetMetadataCategory(MethodDesc method);
+
+        /// <summary>
+        /// Gets the metadata category for a generated type in the current compilation.
+        /// The method can assume it will only get called with '<paramref name="type"/>' that has an EEType generated
+        /// in the current compilation.
+        /// Note that if this method doesn't return <see cref="MetadataCategory.Description"/>, it doesn't mean
+        /// that the method never has metadata. The metadata might just be generated in a different compilation.
+        /// </summary>
         protected abstract MetadataCategory GetMetadataCategory(TypeDesc type);
         protected abstract MetadataCategory GetMetadataCategory(FieldDesc field);
     }
@@ -559,6 +623,7 @@ namespace ILCompiler
         }
     }
 
+    [Flags]
     public enum MetadataCategory
     {
         None = 0x00,

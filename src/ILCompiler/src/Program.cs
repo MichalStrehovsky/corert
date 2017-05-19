@@ -330,19 +330,27 @@ namespace ILCompiler
             else
                 builder = new RyuJitCompilationBuilder(typeSystemContext, compilationGroup);
 
+            var scannerBuilder = builder.GetILScannerBuilder();
+            var scanner = scannerBuilder.UseCompilationRoots(compilationRoots).ToILScanner();
+            var ilScanResults = scanner.Scan();
+
             var logger = _isVerbose ? new Logger(Console.Out, true) : Logger.Null;
 
             DependencyTrackingLevel trackingLevel = _dgmlLogFileName == null ?
                 DependencyTrackingLevel.None : (_generateFullDgmlLog ? DependencyTrackingLevel.All : DependencyTrackingLevel.First);
 
+            CompilerGeneratedMetadataManager metadataManager = new CompilerGeneratedMetadataManager(compilationGroup, typeSystemContext, ilScanResults, _metadataLogFileName);
+
+            compilationRoots.Add(metadataManager);
+
             ICompilation compilation = builder
                 .UseBackendOptions(_codegenOptions)
+                .UseMetadataManager(metadataManager)
                 .UseLogger(logger)
                 .UseDependencyTracking(trackingLevel)
                 .UseCompilationRoots(compilationRoots)
                 .UseOptimizationMode(_optimizationMode)
                 .UseDebugInfo(_enableDebugInfo)
-                .UseMetadataLogFile(_metadataLogFileName)
                 .ToCompilation();
 
             ObjectDumper dumper = _mapFileName != null ? new ObjectDumper(_mapFileName) : null;

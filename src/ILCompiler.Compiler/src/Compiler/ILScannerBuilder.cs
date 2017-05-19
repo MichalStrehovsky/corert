@@ -43,10 +43,13 @@ namespace ILCompiler
 
         public IILScanner ToILScanner()
         {
-            // TODO: we will want different metadata managers depending on whether we're doing reflection analysis
-            var metadataManager = new CompilerGeneratedMetadataManager(_compilationGroup, _context, null);
+            ILScanningOptions options = 0;
 
-            var nodeFactory = new ILScanNodeFactory(_context, _compilationGroup, metadataManager, _nameMangler);
+            // TODO: we will want different metadata managers depending on whether we're doing reflection analysis
+            var metadataManager = new ScannerMetadataManager(_compilationGroup, _context);
+            options |= ILScanningOptions.ScanForReflectionRoots;
+
+            var nodeFactory = new ILScanNodeFactory(_context, _compilationGroup, metadataManager, _nameMangler, options);
             DependencyAnalyzerBase<NodeFactory> graph = _dependencyTrackingLevel.CreateDependencyGraph(nodeFactory);
 
             return new ILScanner(graph, nodeFactory, _compilationRoots, _logger);

@@ -207,12 +207,6 @@ namespace Internal.IL
             if (runtimeDeterminedMethod.IsRuntimeDeterminedExactMethod)
                 method = runtimeDeterminedMethod.GetCanonMethodTarget(CanonicalFormKind.Specific);
 
-            if (method.IsRawPInvoke())
-            {
-                // Raw P/invokes don't have any dependencies.
-                return;
-            }
-
             string reason = null;
             switch (opcode)
             {
@@ -228,6 +222,17 @@ namespace Internal.IL
                     reason = "ldvirtftn"; break;
                 default:
                     Debug.Assert(false); break;
+            }
+
+            // If we're scanning for reflection, mark the method now before we start translating it to something else
+            // (e.g. resolving a constrained call will make interface method use disappear)
+            if (_factory.IsScanningForReflectionRoots && !_factory.MetadataManager.IsReflectionBlocked(method))
+                _dependencies.Add(_factory.ScannedMethod(method), reason);
+
+            if (method.IsRawPInvoke())
+            {
+                // Raw P/invokes don't have any dependencies.
+                return;
             }
 
             // If we're scanning the fallback body because scanning the real body failed, don't trigger cctor.
@@ -299,6 +304,17 @@ namespace Internal.IL
                         {
                             int delTargetToken = ReadILTokenAt(_previousInstructionOffset + 2);
                             var delTargetMethod = (MethodDesc)_methodIL.GetObject(delTargetToken);
+
+                            TypeDesc delegateType = runtimeDeterminedMethod.OwningType;
+                            if (delegateType.IsRuntimeDeterminedSubtype)
+                            {
+                                _dependencies.Add(GetGenericLookupHelper(ReadyToRunHelperId.TypeHandle, delegateType), reason);
+                            }
+                            else
+                            {
+                                _dependencies.Add(_factory.ConstructedTypeSymbol(delegateType), reason);
+                            }
+
                             TypeDesc canonDelegateType = method.OwningType.ConvertToCanonForm(CanonicalFormKind.Specific);
                             DelegateCreationInfo info = _compilation.GetDelegateCtor(canonDelegateType, delTargetMethod, previousOpcode == ILOpcode.ldvirtftn);
                             
@@ -319,7 +335,6 @@ namespace Internal.IL
 
             if (method.OwningType.IsDelegate && method.Name == "Invoke")
             {
-                // TODO: might not want to do this if scanning for reflection.
                 // This is expanded as an intrinsic, not a function call.
                 return;
             }

@@ -38,15 +38,6 @@ namespace ILCompiler.DependencyAnalysis
 
         public override IEnumerable<DependencyListEntry> GetStaticDependencies(NodeFactory context)
         {
-            // TODO: https://github.com/dotnet/corert/issues/3224
-            if (_method.IsAbstract)
-            {
-                return new DependencyListEntry[]
-                {
-                    new DependencyListEntry(context.ReflectableMethod(_method), "Abstract reflectable method"),
-                };
-            }
-
             return Array.Empty<DependencyListEntry>();
         }
         public override IEnumerable<CombinedDependencyListEntry> GetConditionalStaticDependencies(NodeFactory context)

@@ -13,51 +13,34 @@ using Debug = System.Diagnostics.Debug;
 namespace ILCompiler.DependencyAnalysis
 {
     /// <summary>
-    /// Represents a method that doesn't have a body, but we need to track its dependencies as if it was a body
-    /// because it's reflectable.
+    /// Represents a reflectable module.
     /// </summary>
-    internal class ReflectableMethodNode : DependencyNodeCore<NodeFactory>
+    /// <remarks>
+    /// Only expected to be used during ILScanning when scanning for reflection.
+    /// </remarks>
+    internal class ModuleMetadataNode : DependencyNodeCore<NodeFactory>
     {
-        private readonly MethodDesc _method;
+        private readonly ModuleDesc _module;
 
-        public ReflectableMethodNode(MethodDesc method)
+        public ModuleMetadataNode(ModuleDesc module)
         {
-            Debug.Assert(ShouldTrackMethod(method));
-            _method = method;
-        }
-
-        public MethodDesc Method => _method;
-
-        /// <summary>
-        /// Returns true if '<paramref name="method"/>' should be tracked as a <see cref="ReflectableMethodNode"/>
-        /// as opposed to a regular entrypoint.
-        /// </summary>
-        public static bool ShouldTrackMethod(MethodDesc method)
-        {
-            if (method.IsAbstract || method.IsRawPInvoke())
-            {
-                // These don't have a body
-                return true;
-            }
-
-            if (method.IsConstructor && method.OwningType.IsString)
-            {
-                // String constructors don't actually exist
-                return true;
-            }
-
-            return false;
+            Debug.Assert(module is IAssemblyDesc, "Multi-module assemblies?");
+            _module = module;
         }
 
         public override IEnumerable<DependencyListEntry> GetStaticDependencies(NodeFactory factory)
         {
+            Debug.Assert(factory is ILScanNodeFactory);
+
             DependencyList dependencies = null;
-            factory.MetadataManager.GetDependenciesDueToReflectability(ref dependencies, factory, _method);
+            CustomAttributeBasedDependencyAlgorithm.AddDependenciesDueToCustomAttributes(ref dependencies, (ILScanNodeFactory)factory,
+                (Internal.TypeSystem.Ecma.EcmaAssembly)_module);
             return dependencies;
         }
+
         protected override string GetName(NodeFactory factory)
         {
-            return "Reflectable method: " + _method.ToString();
+            return "Reflectable module: " + ((IAssemblyDesc)_module).GetName().FullName;
         }
 
         public override bool InterestingForDynamicDependencyAnalysis => false;

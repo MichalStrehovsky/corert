@@ -13,6 +13,8 @@ using Internal.IL;
 using Internal.IL.Stubs;
 using Internal.TypeSystem;
 
+using Debug = System.Diagnostics.Debug;
+
 namespace ILCompiler
 {
     /// <summary>
@@ -76,7 +78,7 @@ namespace ILCompiler
 
         public ILScanResults Scan()
         {
-            return new ILScanResults(_dependencyGraph.MarkedNodeList);
+            return new ILScanResults(_dependencyGraph.MarkedNodeList, _nodeFactory.MetadataManager);
         }
     }
 
@@ -85,13 +87,15 @@ namespace ILCompiler
         ILScanResults Scan();
     }
 
-    public class ILScanResults
+    public class ILScanResults : IReflectionRootProvider
     {
         private readonly ImmutableArray<DependencyNodeCore<NodeFactory>> _markedNodes;
+        private MetadataManager _metadataManager;
 
-        internal ILScanResults(ImmutableArray<DependencyNodeCore<NodeFactory>> markedNodes)
+        internal ILScanResults(ImmutableArray<DependencyNodeCore<NodeFactory>> markedNodes, MetadataManager metadataManager)
         {
             _markedNodes = markedNodes;
+            _metadataManager = metadataManager;
         }
 
         public IEnumerable<MethodDesc> CompiledMethods
@@ -103,6 +107,75 @@ namespace ILCompiler
                     var methodNode = node as ScannedMethodNode;
                     if (methodNode != null)
                         yield return methodNode.Method;
+                }
+            }
+        }
+
+        IEnumerable<MethodDesc> IReflectionRootProvider.MethodsWithMetadata
+        {
+            get
+            {
+                foreach (var node in _markedNodes)
+                {
+                    if (node is MethodMetadataNode)
+                        yield return ((MethodMetadataNode)node).Method;
+                }
+            }
+        }
+
+        IEnumerable<MethodDesc> IReflectionRootProvider.InvokableMethods
+        {
+            get
+            {
+                foreach (var node in _markedNodes)
+                {
+                    MethodDesc method;
+                    if (node is ScannedMethodNode)
+                        method = ((ScannedMethodNode)node).Method;
+                    else if (node is ReflectableMethodNode)
+                        method = ((ReflectableMethodNode)node).Method;
+                    else if (node is ShadowConcreteMethodNode)
+                        method = ((ShadowConcreteMethodNode)node).Method;
+                    else
+                        continue;
+
+                    if (method.IsCanonicalMethod(CanonicalFormKind.Any))
+                        continue;
+
+                    if (!_metadataManager.IsReflectionBlocked(method))
+                        yield return method;
+                }
+            }
+        }
+
+        IEnumerable<MetadataType> IReflectionRootProvider.TypesWithMetadata
+        {
+            get
+            {
+                foreach (var node in _markedNodes)
+                {
+                    if (node is TypeMetadataNode)
+                        yield return ((TypeMetadataNode)node).Type;
+                }
+            }
+        }
+
+        IEnumerable<TypeDesc> IReflectionRootProvider.InvokableTypes
+        {
+            get
+            {
+                foreach (var node in _markedNodes)
+                {
+                    TypeDesc type;
+                    if (node is ConstructedEETypeNode)
+                        type = ((ConstructedEETypeNode)node).Type;
+                    else
+                        continue;
+
+                    Debug.Assert(!type.IsCanonicalSubtype(CanonicalFormKind.Any));
+
+                    if (!_metadataManager.IsReflectionBlocked(type))
+                        yield return type;
                 }
             }
         }

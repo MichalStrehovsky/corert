@@ -215,11 +215,19 @@ namespace ILCompiler
 
             public void AddCompilationRoot(MethodDesc method, string reason, string exportName = null)
             {
-                IMethodNode methodEntryPoint = _factory.CanonicalEntrypoint(method);
-                _graph.AddRoot(methodEntryPoint, reason);
+                if (ReflectableMethodNode.ShouldTrackMethod(method))
+                {
+                    Debug.Assert(exportName == null);
+                    _graph.AddRoot(_factory.ReflectableMethod(method), reason);
+                }
+                else
+                {
+                    IMethodNode methodEntryPoint = _factory.CanonicalEntrypoint(method);
+                    _graph.AddRoot(methodEntryPoint, reason);
 
-                if (exportName != null)
-                    _factory.NodeAliases.Add(methodEntryPoint, exportName);
+                    if (exportName != null)
+                        _factory.NodeAliases.Add(methodEntryPoint, exportName);
+                }
             }
 
             public void AddCompilationRoot(TypeDesc type, string reason)
@@ -264,11 +272,6 @@ namespace ILCompiler
 
                 if (!_factory.CompilationModuleGroup.ShouldProduceFullVTable(method.OwningType))
                     _graph.AddRoot(_factory.VirtualMethodUse(method), reason);
-
-                if (method.IsAbstract)
-                {
-                    _graph.AddRoot(_factory.ReflectableMethod(method), reason);
-                }
             }
         }
     }

@@ -18,17 +18,23 @@ namespace ILCompiler.DependencyAnalysis
     {
         public static void AddDependenciesDueToReflectability(ref DependencyList dependencies, NodeFactory factory, MethodDesc method)
         {
-            // TODO: https://github.com/dotnet/corert/issues/3224
-            // Reflection invoke stub handling is here because in the current reflection model we reflection-enable
-            // all methods that are compiled. Ideally the list of reflection enabled methods should be known before
-            // we even start the compilation process (with the invocation stubs being compilation roots like any other).
-            // The existing model has it's problems: e.g. the invocability of the method depends on inliner decisions.
-            if (factory.MetadataManager.IsReflectionInvokable(method))
+            if (!factory.MetadataManager.IsReflectionBlocked(method) && factory.MetadataManager.IsReflectionInvokable(method))
             {
                 if (dependencies == null)
                     dependencies = new DependencyList();
 
-                if (factory.MetadataManager.HasReflectionInvokeStubForInvokableMethod(method) && !method.IsCanonicalMethod(CanonicalFormKind.Any) /* Shared generics handled in the shadow concrete method node */)
+                if (factory.Target.Abi != TargetAbi.ProjectN)
+                {
+                    // The mapping table requires that we have an EEType
+                    if (ConstructedEETypeNode.CreationAllowed(method.OwningType))
+                        dependencies.Add(factory.ConstructedTypeSymbol(method.OwningType), "Owning type of a reflectable method");
+                    else
+                        dependencies.Add(factory.NecessaryTypeSymbol(method.OwningType), "Owning type of a reflectable method");
+                }
+
+
+                if (factory.MetadataManager.HasReflectionInvokeStubForInvokableMethod(method)
+                    && (factory.Target.Abi != TargetAbi.ProjectN || !method.IsCanonicalMethod(CanonicalFormKind.Any)))
                 {
                     MethodDesc canonInvokeStub = factory.MetadataManager.GetCanonicalReflectionInvokeStub(method);
                     if (canonInvokeStub.IsSharedByGenericInstantiations)
