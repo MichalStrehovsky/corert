@@ -62,7 +62,7 @@ namespace ILCompiler
             // TODO: Workaround lazy PInvoke resolution not working with CppCodeGen yet
             // https://github.com/dotnet/corert/issues/2454
             // https://github.com/dotnet/corert/issues/2149
-            if (nodeFactory.IsCppCodegenTemporaryWorkaround) forceLazyPInvokeResolution = false;
+            //if (nodeFactory.IsCppCodegenTemporaryWorkaround) forceLazyPInvokeResolution = false;
             PInvokeILProvider = new PInvokeILProvider(new PInvokeILEmitterConfiguration(forceLazyPInvokeResolution), nodeFactory.InteropStubManager.InteropStateManager);
 
             _methodILCache = new ILProvider(PInvokeILProvider);

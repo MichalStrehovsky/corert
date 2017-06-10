@@ -1792,7 +1792,9 @@ namespace Internal.IL
 
             if (field.IsStatic)
             {
-                if (!fieldType.IsValueType)
+                if (field.HasRva)
+                    Append("__rvaStatics.");
+                else if (!fieldType.IsValueType)
                     Append("__gcStatics.");
                 else
                     Append("__statics.");
@@ -1847,7 +1849,9 @@ namespace Internal.IL
 
             if (field.IsStatic)
             {
-                if (!fieldType.IsValueType)
+                if (field.HasRva)
+                    Append("__rvaStatics.");
+                else if (!fieldType.IsValueType)
                     Append("__gcStatics.");
                 else
                     Append("__statics.");
@@ -1898,7 +1902,9 @@ namespace Internal.IL
             AppendLine();
             if (field.IsStatic)
             {
-                if (!fieldType.IsValueType)
+                if (field.HasRva)
+                    Append("__rvaStatics.");
+                else if (!fieldType.IsValueType)
                     Append("__gcStatics.");
                 else
                     Append("__statics.");

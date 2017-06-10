@@ -344,6 +344,9 @@
     <Compile Include="..\..\Common\src\TypeSystem\IL\Stubs\PInvokeLazyFixupField.cs">
       <Link>IL\Stubs\PInvokeLazyFixupField.cs</Link>
     </Compile>
+    <Compile Include="..\..\Common\src\TypeSystem\IL\Stubs\PInvokeLazyFixupField.Mangling.cs">
+      <Link>IL\Stubs\PInvokeLazyFixupField.Mangling.cs</Link>
+    </Compile>
     <Compile Include="..\..\Common\src\TypeSystem\IL\Stubs\PInvokeLazyFixupField.Sorting.cs">
       <Link>IL\Stubs\PInvokeLazyFixupField.Sorting.cs</Link>
     </Compile>

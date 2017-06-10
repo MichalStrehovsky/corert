@@ -459,6 +459,7 @@ namespace ILCompiler.CppCodeGen
         private CppGenerationBuffer _gcStatics;
         private CppGenerationBuffer _threadStatics;
         private CppGenerationBuffer _gcThreadStatics;
+        private CppGenerationBuffer _rvaStatics;
 
         // Base classes and valuetypes has to be emitted before they are used.
         private HashSet<TypeDesc> _emittedTypes;
@@ -509,7 +510,11 @@ namespace ILCompiler.CppCodeGen
 
                     TypeDesc fieldType = GetFieldTypeOrPlaceholder(field);
                     CppGenerationBuffer builder;
-                    if (!fieldType.IsValueType)
+                    if (field.HasRva)
+                    {
+                        builder = _rvaStatics;
+                    }
+                    else if (!fieldType.IsValueType)
                     {
                         builder = _gcStatics;
                     }
@@ -521,7 +526,17 @@ namespace ILCompiler.CppCodeGen
                     builder.AppendLine();
                     builder.Append(GetCppSignatureTypeName(fieldType));
                     builder.Append(" ");
-                    builder.Append(GetCppStaticFieldName(field) + ";");
+                    builder.Append(GetCppStaticFieldName(field));
+
+                    if (field.HasRva)
+                    {
+                        // TODO
+                        builder.Append(";");
+                    }
+                    else
+                    {
+                        builder.Append(";");
+                    }
                 }
                 else
                 {
@@ -1289,6 +1304,8 @@ namespace ILCompiler.CppCodeGen
             _threadStatics.Indent();
             _gcThreadStatics = new CppGenerationBuffer();
             _gcThreadStatics.Indent();
+            _rvaStatics = new CppGenerationBuffer();
+            _rvaStatics.Indent();
 
             OutputNodes(nodes, factory);
 
@@ -1303,6 +1320,10 @@ namespace ILCompiler.CppCodeGen
             Out.Write("struct {");
             Out.Write(_gcStatics.ToString());
             Out.Write("} __gcThreadStatics;");
+
+            Out.Write("struct {");
+            Out.Write(_rvaStatics.ToString());
+            Out.Write("} __rvaStatics;");
 
             OutputExternCSignatures();
 

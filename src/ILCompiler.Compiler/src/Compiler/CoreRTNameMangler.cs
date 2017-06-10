@@ -554,11 +554,22 @@ namespace ILCompiler
                 return _mangledFieldNames[field];
             }
 
+            string mangledName;
+            if (field is IPrefixMangledMethod)
+            {
+                mangledName = GetPrefixMangledMethodName((IPrefixMangledMethod)field).ToString();
+            }
+            else if (field is IPrefixMangledType)
+            {
+                mangledName = GetPrefixMangledTypeName((IPrefixMangledType)field).ToString();
+            }
+            else
+            {
+                mangledName = SanitizeName(field.Name);
 
-            string mangledName = SanitizeName(field.Name);
-
-            if (prependTypeName != null)
-                mangledName = prependTypeName + "__" + mangledName;
+                if (prependTypeName != null)
+                    mangledName = prependTypeName + "__" + mangledName;
+            }
 
             Utf8String utf8MangledName = new Utf8String(mangledName);
 

@@ -25,8 +25,8 @@ namespace ILCompiler
         private static readonly LibraryInitializerInfo[] s_assembliesWithLibraryInitializers =
             {
                 new LibraryInitializerInfo(ClassLibraryPlaceHolderString),
-                new LibraryInitializerInfo("System.Private.TypeLoader"),
-                new LibraryInitializerInfo("System.Private.Reflection.Execution"),
+                //new LibraryInitializerInfo("System.Private.TypeLoader"),
+                //new LibraryInitializerInfo("System.Private.Reflection.Execution"),
                 new LibraryInitializerInfo("System.Private.DeveloperExperience.Console"),
                 new LibraryInitializerInfo("System.Private.Interop"),
             };
