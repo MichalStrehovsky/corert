@@ -266,6 +266,11 @@ namespace ILCompiler.DependencyAnalysis
                 return new BlobNode(key.Name, ObjectNodeSection.ReadOnlyDataSection, key.Data, key.Alignment);
             });
 
+            _fieldRvaStaticData = new NodeCache<FieldDesc, RvaStaticFieldDataNode>(key =>
+            {
+                return new RvaStaticFieldDataNode(key);
+            });
+
             _externSymbols = new NodeCache<string, ExternSymbolNode>((string name) =>
             {
                 return new ExternSymbolNode(name);
@@ -616,6 +621,13 @@ namespace ILCompiler.DependencyAnalysis
         public BlobNode ReadOnlyDataBlob(Utf8String name, byte[] blobData, int alignment)
         {
             return _readOnlyDataBlobs.GetOrAdd(new ReadOnlyDataBlobKey(name, blobData, alignment));
+        }
+
+        private NodeCache<FieldDesc, RvaStaticFieldDataNode> _fieldRvaStaticData;
+
+        public RvaStaticFieldDataNode RvaStaticFieldData(FieldDesc field)
+        {
+            return _fieldRvaStaticData.GetOrAdd(field);
         }
 
         private NodeCache<TypeDesc, InterfaceDispatchMapNode> _interfaceDispatchMaps;
