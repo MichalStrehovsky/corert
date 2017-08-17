@@ -112,6 +112,8 @@ namespace Internal.TypeSystem
                         }
                         return convertedType;
                     }
+                    else if (typeToConvert.UnderlyingType.Category == TypeFlags.Int32)
+                        return context.CanonInt32Type;
                     else
                         return typeToConvert;
                 }

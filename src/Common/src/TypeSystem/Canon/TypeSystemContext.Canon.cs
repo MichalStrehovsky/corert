@@ -28,6 +28,22 @@ namespace Internal.TypeSystem
             }
         }
 
+        private CanonInt32Type _canonInt32Type = null;
+        /// <summary>
+        /// Instance of System.__Canon for this context
+        /// </summary>
+        public CanonBaseType CanonInt32Type
+        {
+            get
+            {
+                if (_canonInt32Type == null)
+                {
+                    Interlocked.CompareExchange(ref _canonInt32Type, new CanonInt32Type(this), null);
+                }
+                return _canonInt32Type;
+            }
+        }
+
         private UniversalCanonType _universalCanonType = null;
         /// <summary>
         /// Instance of System.__UniversalCanon for this context
@@ -52,11 +68,11 @@ namespace Internal.TypeSystem
         {
             if (kind == CanonicalFormKind.Any)
             {
-                return type == CanonType || type == UniversalCanonType;
+                return type is CanonBaseType;
             }
             else if (kind == CanonicalFormKind.Specific)
             {
-                return type == CanonType;
+                return type is CanonBaseType && type != UniversalCanonType;
             }
             else
             {

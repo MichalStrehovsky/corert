@@ -58,6 +58,8 @@ namespace Internal.TypeSystem
             }
         }
 
+        public override TypeDesc UnderlyingType => CanonicalType.UnderlyingType;
+
         public override TypeSystemContext Context
         {
             get

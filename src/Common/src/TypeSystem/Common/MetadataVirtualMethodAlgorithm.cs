@@ -176,7 +176,12 @@ namespace Internal.TypeSystem
 
         public override MethodDesc FindVirtualFunctionTargetMethodOnObjectType(MethodDesc targetMethod, TypeDesc objectType)
         {
-            return FindVirtualFunctionTargetMethodOnObjectType(targetMethod, (MetadataType)objectType);
+            MetadataType objType = objectType as MetadataType;
+            if (objType == null)
+            {
+                objType = objectType.Context.GetWellKnownType(WellKnownType.Int32) as MetadataType;
+            }
+            return FindVirtualFunctionTargetMethodOnObjectType(targetMethod, objType);
         }
 
         /// <summary>
@@ -465,7 +470,13 @@ namespace Internal.TypeSystem
 
         public override MethodDesc ResolveInterfaceMethodToVirtualMethodOnType(MethodDesc interfaceMethod, TypeDesc currentType)
         {
-            return ResolveInterfaceMethodToVirtualMethodOnType(interfaceMethod, (MetadataType)currentType);
+            MetadataType objType = currentType as MetadataType;
+            if (objType == null)
+            {
+                objType = currentType.Context.GetWellKnownType(WellKnownType.Int32) as MetadataType;
+            }
+
+            return ResolveInterfaceMethodToVirtualMethodOnType(interfaceMethod, (MetadataType)objType);
         }
 
         //////////////////////// INTERFACE RESOLUTION

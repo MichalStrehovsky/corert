@@ -456,7 +456,7 @@ namespace Internal.TypeSystem
                 return layoutMetadata.PackingSize;
         }
 
-        private static SizeAndAlignment ComputeInstanceSize(MetadataType type, LayoutInt instanceSize, LayoutInt alignment, out SizeAndAlignment byteCount)
+        public static SizeAndAlignment ComputeInstanceSize(DefType type, LayoutInt instanceSize, LayoutInt alignment, out SizeAndAlignment byteCount)
         {
             SizeAndAlignment result;
 
@@ -651,7 +651,7 @@ namespace Internal.TypeSystem
             return false;
         }
 
-        private struct SizeAndAlignment
+        public struct SizeAndAlignment
         {
             public LayoutInt Size;
             public LayoutInt Alignment;

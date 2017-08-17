@@ -22,6 +22,11 @@ namespace Internal.TypeSystem
         protected internal override int ClassCode => 46114331;
     }
 
+    partial class CanonInt32Type
+    {
+        protected internal override int ClassCode => 12285272;
+    }
+
     partial class UniversalCanonType
     {
         protected internal override int ClassCode => 1687626054;

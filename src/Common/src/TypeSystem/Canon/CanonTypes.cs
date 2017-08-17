@@ -144,6 +144,95 @@ namespace Internal.TypeSystem
         }
     }
 
+    internal sealed partial class CanonInt32Type : CanonBaseType
+    {
+        private const string _Namespace = "System";
+        private const string _Name = "__CanonInt32";
+        public const string FullName = _Namespace + "." + _Name;
+
+        private int _hashcode;
+
+        public override string Namespace
+        {
+            get
+            {
+                return _Namespace;
+            }
+        }
+
+        public override string Name
+        {
+            get
+            {
+                return _Name;
+            }
+        }
+
+        public CanonInt32Type(TypeSystemContext context)
+            : base(context)
+        {
+            Initialize();
+        }
+
+        // Provides an extensibility hook for type system consumers that need to perform
+        // consumer-specific initialization.
+        partial void Initialize();
+
+        public override DefType BaseType
+        {
+            get
+            {
+                return Context.GetWellKnownType(WellKnownType.ValueType);
+            }
+        }
+
+        public override bool IsCanonicalSubtype(CanonicalFormKind policy)
+        {
+            return policy == CanonicalFormKind.Specific ||
+                policy == CanonicalFormKind.Any;
+        }
+
+        protected override TypeDesc ConvertToCanonFormImpl(CanonicalFormKind kind)
+        {
+            Debug.Assert(kind == CanonicalFormKind.Specific);
+            return this;
+        }
+
+        protected override TypeFlags ComputeTypeFlags(TypeFlags mask)
+        {
+            TypeFlags flags = 0;
+
+            if ((mask & TypeFlags.CategoryMask) != 0)
+            {
+                flags |= TypeFlags.Int32;
+            }
+
+            if ((mask & TypeFlags.HasGenericVarianceComputed) != 0)
+            {
+                flags |= TypeFlags.HasGenericVarianceComputed;
+            }
+
+            flags |= TypeFlags.HasFinalizerComputed;
+
+            return flags;
+        }
+
+        public override int GetHashCode()
+        {
+            if (_hashcode == 0)
+            {
+                _hashcode = TypeHashingAlgorithms.ComputeNameHashCode(FullName);
+            }
+
+            return _hashcode;
+        }
+
+        public override string ToString()
+        {
+            return FullName;
+        }
+    }
+
     /// <summary>
     /// Type that can be used for canonicalization of any type (including value types of unknown size)
     /// </summary>

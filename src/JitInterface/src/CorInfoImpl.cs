@@ -1257,16 +1257,19 @@ namespace Internal.JitInterface
             {
                 result |= CorInfoFlag.CORINFO_FLG_VALUECLASS;
 
-                if (metadataType.IsByRefLike)
-                    result |= CorInfoFlag.CORINFO_FLG_CONTAINS_STACK_PTR;
+                if (metadataType != null)
+                {
+                    if (metadataType.IsByRefLike)
+                        result |= CorInfoFlag.CORINFO_FLG_CONTAINS_STACK_PTR;
 
-                // The CLR has more complicated rules around CUSTOMLAYOUT, but this will do.
-                if (metadataType.IsExplicitLayout || metadataType.IsWellKnownType(WellKnownType.TypedReference))
-                    result |= CorInfoFlag.CORINFO_FLG_CUSTOMLAYOUT;
+                    // The CLR has more complicated rules around CUSTOMLAYOUT, but this will do.
+                    if (metadataType.IsExplicitLayout || metadataType.IsWellKnownType(WellKnownType.TypedReference))
+                        result |= CorInfoFlag.CORINFO_FLG_CUSTOMLAYOUT;
 
-                // TODO
-                // if (type.IsUnsafeValueType)
-                //    result |= CorInfoFlag.CORINFO_FLG_UNSAFE_VALUECLASS;
+                    // TODO
+                    // if (type.IsUnsafeValueType)
+                    //    result |= CorInfoFlag.CORINFO_FLG_UNSAFE_VALUECLASS;
+                }
             }
 
             if (type.IsCanonicalSubtype(CanonicalFormKind.Any))

@@ -94,6 +94,8 @@ namespace Internal.TypeSystem
                     {
                         return context.CanonType;
                     }
+                    else if (typeToConvert.UnderlyingType.Category == TypeFlags.Int32)
+                        return context.CanonInt32Type;
                     else if (typeToConvert.HasInstantiation)
                     {
                         TypeDesc canonicalType = typeToConvert.ConvertToCanonForm(CanonicalFormKind.Specific);

@@ -261,6 +261,8 @@ namespace ILCompiler
         {
             if (type == UniversalCanonType)
                 return UniversalCanonLayoutAlgorithm.Instance;
+            else if (type == CanonInt32Type)
+                return PrimitiveCanonLayoutAlgorithm.Instance;
             else if (type.IsRuntimeDeterminedType)
                 return _runtimeDeterminedFieldLayoutAlgorithm;
             else if (_simdHelper.IsVectorOfT(type))

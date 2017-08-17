@@ -6,8 +6,19 @@ using System;
 
 internal class Program
 {
+    public static T Gen<T>(T value)
+    {
+        Console.WriteLine(typeof(T));
+        return value;
+    }
+
+    enum Mine { }
+    enum Yours { }
     private static void Main(string[] args)
     {
-        Console.WriteLine("Hello world");
+        Console.WriteLine(Gen<int>(123));
+        Console.WriteLine(Gen<Mine>(0));
+
+        typeof(Program).GetMethod(nameof(Gen)).MakeGenericMethod(typeof(Yours)).Invoke(null, new object[] { (Yours)0 });
     }
 }
