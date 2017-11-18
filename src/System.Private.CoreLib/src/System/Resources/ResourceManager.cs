@@ -729,13 +729,13 @@ namespace System.Resources
             }
 
             String v = null;
-            IEnumerable<SatelliteContractVersionAttribute> attrs = a.GetCustomAttributes<SatelliteContractVersionAttribute>();
+            /*IEnumerable<SatelliteContractVersionAttribute> attrs = a.GetCustomAttributes<SatelliteContractVersionAttribute>();
 
             foreach (SatelliteContractVersionAttribute attr in attrs)
             {
                 Debug.Assert(v == null, "Cannot have multiple instances of SatelliteContractVersionAttribute on an assembly!");
                 v = attr.Version;
-            }
+            }*/
 
             if (v == null)
             {

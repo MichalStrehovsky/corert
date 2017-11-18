@@ -411,7 +411,7 @@ namespace System.Diagnostics.Tracing
         {
             bool result;
 #if (ES_BUILD_PCL || ES_BUILD_PN)
-            result = propInfo.IsDefined(attributeType);
+            result = false; // propInfo.IsDefined(attributeType);
 #else
             var attributes = propInfo.GetCustomAttributes(
                 attributeType,
@@ -426,11 +426,11 @@ namespace System.Diagnostics.Tracing
         {
             AttributeType result = null;
 #if (ES_BUILD_PCL || ES_BUILD_PN)
-            foreach (var attrib in propInfo.GetCustomAttributes<AttributeType>(false))
+            /*foreach (var attrib in propInfo.GetCustomAttributes<AttributeType>(false))
             {
                 result = attrib;
                 break;
-            }
+            }*/
 #else
             var attributes = propInfo.GetCustomAttributes(typeof(AttributeType), false);
             if (attributes.Length != 0)
@@ -446,11 +446,11 @@ namespace System.Diagnostics.Tracing
         {
             AttributeType result = null;
 #if (ES_BUILD_PCL || ES_BUILD_PN)
-            foreach (var attrib in type.GetTypeInfo().GetCustomAttributes<AttributeType>(false))
+            /*foreach (var attrib in type.GetTypeInfo().GetCustomAttributes<AttributeType>(false))
             {
                 result = attrib;
                 break;
-            }
+            }*/
 #else
             var attributes = type.GetCustomAttributes(typeof(AttributeType), false);
             if (attributes.Length != 0)

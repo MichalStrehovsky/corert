@@ -271,7 +271,7 @@ namespace System.Diagnostics.Tracing
         [SuppressMessage("Microsoft.Concurrency", "CA8001", Justification = "This does not need to be correct when racing with other threads")]
         public bool IsEnabled()
         {
-            return m_eventSourceEnabled;
+            return false;//m_eventSourceEnabled;
         }
 
         /// <summary>
@@ -3288,11 +3288,11 @@ namespace System.Diagnostics.Tracing
             {
                 // Let the runtime to the work for us, since we can execute code in this context.
                 Attribute firstAttribute = null;
-                foreach (var attribute in member.GetCustomAttributes(attributeType, false))
+                /*foreach (var attribute in member.GetCustomAttributes(attributeType, false))
                 {
                     firstAttribute = (Attribute)attribute;
                     break;
-                }
+                }*/
                 return firstAttribute;
             }
 

@@ -632,7 +632,7 @@ namespace System.Diagnostics.Tracing
             public const EventKeywords Debug = (EventKeywords)0x20000;
         }
 
-        public static TplEtwProvider Log = new TplEtwProvider();
+        public static TplEtwProvider Log = null;// new TplEtwProvider();
         public bool Debug { get { return IsEnabled(EventLevel.Verbose, Keywords.Debug); } }
 
         public void DebugFacilityMessage(string Facility, string Message) { WriteEvent(1, Facility, Message); }
