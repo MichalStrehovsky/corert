@@ -33,7 +33,7 @@ namespace System
 
             bool missingDefaultConstructor = false;
 
-            EETypePtr eetype = EETypePtr.EETypePtrOf<T>();
+            EETypePtr eetype = EETypePtr.ConstructedEETypePtrOf<T>();
 
             if (!RuntimeHelpers.IsReference<T>())
             {

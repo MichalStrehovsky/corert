@@ -390,7 +390,7 @@ namespace Internal.IL
                     return;
                 }
 
-                if (IsEETypePtrOf(method))
+                if (IsEETypePtrOfOrConstructedPtrOf(method))
                 {
                     if (runtimeDeterminedMethod.IsRuntimeDeterminedExactMethod)
                     {
@@ -398,7 +398,13 @@ namespace Internal.IL
                     }
                     else
                     {
-                        _dependencies.Add(_factory.ConstructedTypeSymbol(method.Instantiation[0]), reason);
+                        IEETypeNode typeNode;
+                        if (method.Name == "ConstructedEETypePtrOf")
+                            typeNode = _factory.ConstructedTypeSymbol(method.Instantiation[0]);
+                        else
+                            typeNode = _factory.NecessaryTypeSymbol(method.Instantiation[0]);
+
+                        _dependencies.Add(typeNode, reason);
                     }
                     return;
                 }
@@ -753,7 +759,7 @@ namespace Internal.IL
                 }
                 else
                 {
-                    _dependencies.Add(_factory.MaximallyConstructableType(type), "ldtoken");
+                    _dependencies.Add(_factory.NecessaryTypeSymbol(type), "ldtoken");
                 }
 
                 // If this is a ldtoken Type / GetValueInternal sequence, we're done.
@@ -1082,9 +1088,11 @@ namespace Internal.IL
             return false;
         }
 
-        private bool IsEETypePtrOf(MethodDesc method)
+        private bool IsEETypePtrOfOrConstructedPtrOf(MethodDesc method)
         {
-            if (method.IsIntrinsic && method.Name == "EETypePtrOf" && method.Instantiation.Length == 1)
+            if (method.IsIntrinsic &&
+                (method.Name == "EETypePtrOf" || method.Name == "ConstructedEETypePtrOf")
+                && method.Instantiation.Length == 1)
             {
                 MetadataType owningType = method.OwningType as MetadataType;
                 if (owningType != null)

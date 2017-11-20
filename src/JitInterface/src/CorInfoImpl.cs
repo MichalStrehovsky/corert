@@ -978,6 +978,9 @@ namespace Internal.JitInterface
             switch (method.Name)
             {
                 case "EETypePtrOf":
+                    ComputeLookup(pResolvedToken.tokenContext, method.Instantiation[0], ReadyToRunHelperId.NecessaryTypeHandle, ref pResult.lookup);
+                    break;
+                case "ConstructedEETypePtrOf":
                     ComputeLookup(pResolvedToken.tokenContext, method.Instantiation[0], ReadyToRunHelperId.TypeHandle, ref pResult.lookup);
                     break;
                 case "DefaultConstructorOf":
@@ -2818,8 +2821,7 @@ namespace Internal.JitInterface
                 }
 
                 if (pResolvedToken.tokenType == CorInfoTokenKind.CORINFO_TOKENKIND_NewObj
-                        || pResolvedToken.tokenType == CorInfoTokenKind.CORINFO_TOKENKIND_Box
-                        || (pResolvedToken.tokenType == CorInfoTokenKind.CORINFO_TOKENKIND_Ldtoken && ConstructedEETypeNode.CreationAllowed(td)))
+                    || pResolvedToken.tokenType == CorInfoTokenKind.CORINFO_TOKENKIND_Box)
                 {
                     helperId = ReadyToRunHelperId.TypeHandle;
                 }

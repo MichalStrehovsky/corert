@@ -753,7 +753,7 @@ namespace System.Runtime.CompilerServices
             return GetCompletionActionHelper(
                 ref cachedMoveNextAction,
                 ref Unsafe.As<TStateMachine, byte>(ref stateMachine),
-                EETypePtr.EETypePtrOf<TStateMachine>(),
+                EETypePtr.ConstructedEETypePtrOf<TStateMachine>(),
                 taskIfDebuggingEnabled);
         }
 

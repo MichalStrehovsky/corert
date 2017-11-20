@@ -395,8 +395,29 @@ namespace System
             }
         }
 
+        /// <summary>
+        /// Gets the <see cref="EETypePtr"/> that corresponds to the given <typeparamref name="T"/>.
+        /// The EEType is suitable for comparison, but the compiler doesn't guarantee the EEType will
+        /// be suitable for runtime allocation of the given <typeparamref name="T"/>.
+        /// Use <see cref="ConstructedEETypePtrOf{T}"/> if the EEType will be used for allocation.
+        /// </summary>
         [Intrinsic]
         internal static EETypePtr EETypePtrOf<T>()
+        {
+            // Compilers are required to provide a low level implementation of this method.
+            // This can be achieved by optimizing away the reflection part of this implementation
+            // by optimizing typeof(!!0).TypeHandle into "ldtoken !!0", or by
+            // completely replacing the body of this method.
+            return typeof(T).TypeHandle.ToEETypePtr();
+        }
+
+        /// <summary>
+        /// Gets the <see cref="EETypePtr"/> that corresponds to the given <typeparamref name="T"/>.
+        /// The EEType is suitable for comparison and allocation.
+        /// Use <see cref="EETypePtrOf{T}"/> if the EEType won't be allocated.
+        /// </summary>
+        [Intrinsic]
+        internal static EETypePtr ConstructedEETypePtrOf<T>()
         {
             // Compilers are required to provide a low level implementation of this method.
             // This can be achieved by optimizing away the reflection part of this implementation

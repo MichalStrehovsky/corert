@@ -127,6 +127,7 @@ namespace Internal.JitInterface
             table.Add(CorInfoIntrinsics.CORINFO_INTRINSIC_Span_GetItem, "get_Item", "System", "Span`1");
             table.Add(CorInfoIntrinsics.CORINFO_INTRINSIC_ReadOnlySpan_GetItem, "get_Item", "System", "ReadOnlySpan`1");
             table.Add(CorInfoIntrinsics.CORINFO_INTRINSIC_GetRawHandle, "EETypePtrOf", "System", "EETypePtr");
+            table.Add(CorInfoIntrinsics.CORINFO_INTRINSIC_GetRawHandle, "ConstructedEETypePtrOf", "System", "EETypePtr");
             table.Add(CorInfoIntrinsics.CORINFO_INTRINSIC_GetRawHandle, "DefaultConstructorOf", "System", "Activator");
 
             // If this assert fails, make sure to add the new intrinsics to the table above and update the expected count below.

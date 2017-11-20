@@ -60,7 +60,7 @@ namespace System
             }
             else if (eeType.IsPointer)
             {
-                return RuntimeImports.RhBox(EETypePtr.EETypePtrOf<UIntPtr>(), ref value.Value);
+                return RuntimeImports.RhBox(EETypePtr.ConstructedEETypePtrOf<UIntPtr>(), ref value.Value);
             }
             else
             {
