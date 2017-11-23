@@ -32,8 +32,8 @@ namespace System.Diagnostics.Tracing
         [System.Security.SecuritySafeCritical]
         public static void SetCurrentThreadActivityId(Guid activityId)
         {
-            if (TplEtwProvider.Log != null)
-                TplEtwProvider.Log.SetActivityId(activityId);
+            /*if (TplEtwProvider.Log != null)
+                TplEtwProvider.Log.SetActivityId(activityId);*/
 #if FEATURE_MANAGED_ETW
 #if FEATURE_ACTIVITYSAMPLING
             Guid newId = activityId;
@@ -95,8 +95,8 @@ namespace System.Diagnostics.Tracing
 
             // We don't call the activityDying callback here because the caller has declared that
             // it is not dying.  
-            if (TplEtwProvider.Log != null)
-                TplEtwProvider.Log.SetActivityId(activityId);
+            /*if (TplEtwProvider.Log != null)
+                TplEtwProvider.Log.SetActivityId(activityId);*/
         }
 
         /// <summary>

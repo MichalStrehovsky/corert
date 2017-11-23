@@ -257,6 +257,15 @@ namespace Internal.IL
                     }
                 }
 
+                if (method.Name == "get_ResourceManager")
+                {
+                    return new ILStubMethodIL(method, new byte[] {
+                        (byte)ILOpcode.ldnull,
+                        (byte)ILOpcode.ret,
+                        },
+                        Array.Empty<LocalVariableDefinition>(), null);
+                }
+
                 if (method.IsIntrinsic)
                 {
                     MethodIL result = TryGetIntrinsicMethodIL(method);

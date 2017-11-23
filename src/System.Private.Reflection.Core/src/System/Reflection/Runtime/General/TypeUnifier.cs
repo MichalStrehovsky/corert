@@ -272,8 +272,9 @@ namespace System.Reflection.Runtime.TypeInfos
         {
             Debug.Assert(multiDim || rank == 1);
 
-            if (elementType.IsByRef || elementType.IsByRefLike)
-                throw new TypeLoadException(SR.Format(SR.ArgumentException_InvalidArrayElementType, elementType));
+            // IsByRefLike will go and instantiate custom attributes. Really expensive.
+            //if (elementType.IsByRef || elementType.IsByRefLike)
+            //    throw new TypeLoadException(SR.Format(SR.ArgumentException_InvalidArrayElementType, elementType));
 
             // We only permit creating parameterized types if the pay-for-play policy specifically allows them *or* if the result
             // type would be an open type.

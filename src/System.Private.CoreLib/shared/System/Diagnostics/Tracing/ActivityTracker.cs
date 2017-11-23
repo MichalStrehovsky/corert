@@ -65,8 +65,8 @@ namespace System.Diagnostics.Tracing
                 if (m_checkedForEnable)
                     return;
                 m_checkedForEnable = true;
-                if (TplEtwProvider.Log.IsEnabled(EventLevel.Informational, TplEtwProvider.Keywords.TasksFlowActivityIds))
-                    Enable();
+                /*if (TplEtwProvider.Log.IsEnabled(EventLevel.Informational, TplEtwProvider.Keywords.TasksFlowActivityIds))
+                    Enable();*/
                 if (m_current == null)
                     return;
             }
@@ -77,12 +77,12 @@ namespace System.Diagnostics.Tracing
             var currentActivity = m_current.Value;
             var fullActivityName = NormalizeActivityName(providerName, activityName, task);
 
-            var etwLog = TplEtwProvider.Log;
+            /*var etwLog = TplEtwProvider.Log;
             if (etwLog.Debug)
             {
                 etwLog.DebugFacilityMessage("OnStartEnter", fullActivityName);
                 etwLog.DebugFacilityMessage("OnStartEnterActivityState", ActivityInfo.LiveActivities(currentActivity));
-            }
+            }*/
 
             if (currentActivity != null)
             {
@@ -91,8 +91,8 @@ namespace System.Diagnostics.Tracing
                 {
                     activityId = Guid.Empty;
                     relatedActivityId = Guid.Empty;
-                    if (etwLog.Debug)
-                        etwLog.DebugFacilityMessage("OnStartRET", "Fail");
+                    /*if (etwLog.Debug)
+                        etwLog.DebugFacilityMessage("OnStartRET", "Fail");*/
                     return;
                 }
                 // Check for recursion, and force-stop any activities if the activity already started.
@@ -124,11 +124,11 @@ namespace System.Diagnostics.Tracing
             // Remember the current ID so we can log it 
             activityId = newActivity.ActivityId;
             
-            if (etwLog.Debug)
+            /*if (etwLog.Debug)
             {
                 etwLog.DebugFacilityMessage("OnStartRetActivityState", ActivityInfo.LiveActivities(newActivity));
                 etwLog.DebugFacilityMessage1("OnStartRet", activityId.ToString(), relatedActivityId.ToString());
-            }
+            }*/
         }
 
         /// <summary>
@@ -144,12 +144,12 @@ namespace System.Diagnostics.Tracing
 
             var fullActivityName = NormalizeActivityName(providerName, activityName, task);
             
-            var etwLog = TplEtwProvider.Log;
+            /*var etwLog = TplEtwProvider.Log;
             if (etwLog.Debug)
             {
                 etwLog.DebugFacilityMessage("OnStopEnter", fullActivityName);
                 etwLog.DebugFacilityMessage("OnStopEnterActivityState", ActivityInfo.LiveActivities(m_current.Value));
-            }
+            }*/
 
             for (; ; ) // This is a retry loop.
             {
@@ -166,8 +166,8 @@ namespace System.Diagnostics.Tracing
                 {
                     activityId = Guid.Empty;
                     // TODO add some logging about this. Basically could not find matching start.
-                    if (etwLog.Debug)
-                        etwLog.DebugFacilityMessage("OnStopRET", "Fail");
+                    /*if (etwLog.Debug)
+                        etwLog.DebugFacilityMessage("OnStopRET", "Fail");*/
                     return;
                 }
 
@@ -207,11 +207,11 @@ namespace System.Diagnostics.Tracing
 
                     m_current.Value = newCurrentActivity;
 
-                    if (etwLog.Debug)
+                    /*if (etwLog.Debug)
                     {
                         etwLog.DebugFacilityMessage("OnStopRetActivityState", ActivityInfo.LiveActivities(newCurrentActivity));
                         etwLog.DebugFacilityMessage("OnStopRet", activityId.ToString());
-                    }
+                    }*/
                     return;
                 }
                 // We failed to stop it.  We must have hit a race to stop it.  Just start over and try again.  

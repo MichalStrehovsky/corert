@@ -17,7 +17,8 @@ namespace Internal.Diagnostics
 
         public static string FormatStackTrace(IntPtr[] ips, int skipFrames, bool includeFileInfo)
         {
-            return new StackTrace(ips, skipFrames, ips.Length, includeFileInfo).ToString();
+            return String.Empty;
+            //return new StackTrace(ips, skipFrames, ips.Length, includeFileInfo).ToString();
         }
 
         public static class SpecialIP

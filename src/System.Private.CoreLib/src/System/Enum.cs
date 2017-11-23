@@ -817,7 +817,7 @@ namespace System
 
         public String ToString(String format)
         {
-            if (format == null || format.Length == 0)
+            /*if (format == null || format.Length == 0)
                 format = "G";
 
             EnumInfo enumInfo = GetEnumInfo(this.GetType());
@@ -829,7 +829,8 @@ namespace System
             if (enumInfo == null)
                 return this.LastResortToString;
 
-            return Format(enumInfo, this, format);
+            return Format(enumInfo, this, format);*/
+            throw new NotImplementedException();
         }
 
         public String ToString(String format, IFormatProvider provider)

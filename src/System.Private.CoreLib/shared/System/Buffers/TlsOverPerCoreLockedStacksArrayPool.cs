@@ -83,7 +83,7 @@ namespace System.Buffers
                 return Array.Empty<T>();
             }
 
-            ArrayPoolEventSource log = ArrayPoolEventSource.Log;
+            //ArrayPoolEventSource log = ArrayPoolEventSource.Log;
             T[] buffer;
 
             // Get the bucket number for the array length
@@ -100,10 +100,10 @@ namespace System.Buffers
                     if (buffer != null)
                     {
                         tlsBuckets[bucketIndex] = null;
-                        if (log.IsEnabled())
+                        /*if (log.IsEnabled())
                         {
                             log.BufferRented(buffer.GetHashCode(), buffer.Length, Id, bucketIndex);
-                        }
+                        }*/
                         return buffer;
                     }
                 }
@@ -115,10 +115,10 @@ namespace System.Buffers
                     buffer = b.TryPop();
                     if (buffer != null)
                     {
-                        if (log.IsEnabled())
+                        /*if (log.IsEnabled())
                         {
                             log.BufferRented(buffer.GetHashCode(), buffer.Length, Id, bucketIndex);
-                        }
+                        }*/
                         return buffer;
                     }
                 }
@@ -133,14 +133,14 @@ namespace System.Buffers
                 buffer = new T[minimumLength];
             }
 
-            if (log.IsEnabled())
+            /*if (log.IsEnabled())
             {
                 int bufferId = buffer.GetHashCode(), bucketId = -1; // no bucket for an on-demand allocated buffer
                 log.BufferRented(bufferId, buffer.Length, Id, bucketId);
                 log.BufferAllocated(bufferId, buffer.Length, Id, bucketId, bucketIndex >= _buckets.Length ?
                     ArrayPoolEventSource.BufferAllocatedReason.OverMaximumSize :
                     ArrayPoolEventSource.BufferAllocatedReason.PoolExhausted);
-            }
+            }*/
 
             return buffer;
         }
@@ -194,11 +194,11 @@ namespace System.Buffers
             }
 
             // Log that the buffer was returned
-            ArrayPoolEventSource log = ArrayPoolEventSource.Log;
+            /*ArrayPoolEventSource log = ArrayPoolEventSource.Log;
             if (log.IsEnabled())
             {
                 log.BufferReturned(array.GetHashCode(), array.Length, Id);
-            }
+            }*/
         }
 
         /// <summary>

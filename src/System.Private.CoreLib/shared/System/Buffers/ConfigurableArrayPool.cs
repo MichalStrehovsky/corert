@@ -73,7 +73,7 @@ namespace System.Buffers
                 return Array.Empty<T>();
             }
 
-            var log = ArrayPoolEventSource.Log;
+            //var log = ArrayPoolEventSource.Log;
             T[] buffer = null;
 
             int index = Utilities.SelectBucketIndex(minimumLength);
@@ -89,10 +89,10 @@ namespace System.Buffers
                     buffer = _buckets[i].Rent();
                     if (buffer != null)
                     {
-                        if (log.IsEnabled())
+                        /*if (log.IsEnabled())
                         {
                             log.BufferRented(buffer.GetHashCode(), buffer.Length, Id, _buckets[i].Id);
-                        }
+                        }*/
                         return buffer;
                     }
                 }
@@ -109,13 +109,13 @@ namespace System.Buffers
                 buffer = new T[minimumLength];
             }
 
-            if (log.IsEnabled())
+            /*if (log.IsEnabled())
             {
                 int bufferId = buffer.GetHashCode(), bucketId = -1; // no bucket for an on-demand allocated buffer
                 log.BufferRented(bufferId, buffer.Length, Id, bucketId);
                 log.BufferAllocated(bufferId, buffer.Length, Id, bucketId, index >= _buckets.Length ?
                     ArrayPoolEventSource.BufferAllocatedReason.OverMaximumSize : ArrayPoolEventSource.BufferAllocatedReason.PoolExhausted);
-            }
+            }*/
 
             return buffer;
         }
@@ -152,11 +152,11 @@ namespace System.Buffers
             }
 
             // Log that the buffer was returned
-            var log = ArrayPoolEventSource.Log;
+            /*var log = ArrayPoolEventSource.Log;
             if (log.IsEnabled())
             {
                 log.BufferReturned(array.GetHashCode(), array.Length, Id);
-            }
+            }*/
         }
 
         /// <summary>Provides a thread-safe bucket containing buffers that can be Rent'd and Return'd.</summary>
@@ -217,12 +217,12 @@ namespace System.Buffers
                 {
                     buffer = new T[_bufferLength];
 
-                    var log = ArrayPoolEventSource.Log;
+                    /*var log = ArrayPoolEventSource.Log;
                     if (log.IsEnabled())
                     {
                         log.BufferAllocated(buffer.GetHashCode(), _bufferLength, _poolId, Id,
                             ArrayPoolEventSource.BufferAllocatedReason.Pooled);
-                    }
+                    }*/
                 }
 
                 return buffer;

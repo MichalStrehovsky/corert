@@ -28,12 +28,14 @@ namespace System
 
         public override bool Equals(object obj)
         {
-            return RuntimeAugments.Callbacks.ValueTypeEqualsUsingReflection(this, obj);
+            throw new NotSupportedException();
+            //return RuntimeAugments.Callbacks.ValueTypeEqualsUsingReflection(this, obj);
         }
 
         public override int GetHashCode()
         {
-            return RuntimeAugments.Callbacks.ValueTypeGetHashCodeUsingReflection(this);
+            throw new NotSupportedException();
+            //return RuntimeAugments.Callbacks.ValueTypeGetHashCodeUsingReflection(this);
         }
     }
 }
