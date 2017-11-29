@@ -3128,13 +3128,15 @@ namespace Internal.JitInterface
                     // to abort the inlining attempt if the inlinee does any generic lookups.
                     bool inlining = contextMethod != MethodBeingCompiled;
 
-                    // If we resolved a constrained call, calling GetRuntimeDeterminedObjectForToken below would
-                    // result in getting back the unresolved target. Don't capture runtime determined dependencies
-                    // in that case and rely on the dependency analysis computing them based on seeing a call to the
-                    // canonical method body.
-                    // Same applies to array address method (the method doesn't actually do any generic lookups).
-                    if (targetMethod.IsSharedByGenericInstantiations && !inlining && !resolvedConstraint && !referencingArrayAddressMethod)
+                    // We rely on the dependency analysis to compute the exact dependencies needed by concrete methods
+                    // backed by the same canonical method (there's logic that ensures all dictionaries that correspond to
+                    // the canonical method get a ShadowConcreteMethod for the canonical method we just referenced here).
+                    // The exception to that is when the method is generic (and uses it's own dictionary). This might be fixable
+                    // by making the method generic dictionary depend on a ShadowConcreteMethod for the method it represents
+                    // but let's see if that's needed later.
+                    if (!inlining && targetMethod.HasInstantiation)
                     {
+                        Debug.Assert(!resolvedConstraint, "Resolved a constraint - targetMethod no longer corresponds to pResolvedToken!");
                         MethodDesc runtimeDeterminedMethod = (MethodDesc)GetRuntimeDeterminedObjectForToken(ref pResolvedToken);
                         pResult.codePointerOrStubLookup.constLookup = 
                             CreateConstLookupToSymbol(_compilation.NodeFactory.RuntimeDeterminedMethod(runtimeDeterminedMethod));
