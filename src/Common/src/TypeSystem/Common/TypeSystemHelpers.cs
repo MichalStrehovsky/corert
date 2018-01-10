@@ -175,15 +175,13 @@ namespace Internal.TypeSystem
                 return null;
             }
 
-            // Non-virtual methods called through constraints simply resolve to the specified method without constraint resolution.
-            if (!interfaceMethod.IsVirtual)
-            {
-                return null;
-            }
+            // 1. Find the (possibly generic) method that would implement the
+            // constraint if we were making a call on a boxed value type.
 
-            MethodDesc method;
+            TypeDesc canonType = constrainedType.ConvertToCanonForm(CanonicalFormKind.Specific);
 
             MethodDesc genInterfaceMethod = interfaceMethod.GetMethodDefinition();
+            MethodDesc method = null;
             if (genInterfaceMethod.OwningType.IsInterface)
             {
                 // Sometimes (when compiling shared generic code)
@@ -195,11 +193,63 @@ namespace Internal.TypeSystem
                 // at least one of them will be)
 
                 // Enumerate all potential interface instantiations
+                int potentialMatchingInterfaceCount = 0;
+                foreach (TypeDesc potentialInterfaceType in canonType.RuntimeInterfaces)
+                {
+                    if (potentialInterfaceType.ConvertToCanonForm(CanonicalFormKind.Specific)
+                        == interfaceType.ConvertToCanonForm(CanonicalFormKind.Specific))
+                    {
+                        potentialMatchingInterfaceCount++;
+                        method = canonType.ResolveInterfaceMethodToVirtualMethodOnType(genInterfaceMethod);
 
-                // TODO: this code assumes no shared generics
-                Debug.Assert(interfaceType == interfaceMethod.OwningType);
+                        // See code:#TryResolveConstraintMethodApprox_DoNotReturnParentMethod
+                        if (method != null && !method.OwningType.IsValueType)
+                        {
+                            return null;
+                        }
+                    }
+                }
 
-                method = constrainedType.ResolveInterfaceMethodToVirtualMethodOnType(genInterfaceMethod);
+                Debug.Assert(potentialMatchingInterfaceCount != 0);
+
+                if (potentialMatchingInterfaceCount > 1)
+                {
+                    // We have more potentially matching interfaces
+                    Debug.Assert(interfaceType.HasInstantiation);
+
+                    bool isExactMethodResolved = false;
+                    if (!interfaceType.IsCanonicalSubtype(CanonicalFormKind.Any) &&
+                        !interfaceType.IsGenericDefinition &&
+                        !constrainedType.IsCanonicalSubtype(CanonicalFormKind.Any) &&
+                        !constrainedType.IsGenericDefinition)
+                    {
+                        // We have exact interface and type instantiations (no generic variables and __Canon used 
+                        // anywhere)
+                        if (constrainedType.CanCastTo(interfaceType))
+                        {
+                            method = constrainedType.ResolveInterfaceMethodToVirtualMethodOnType(genInterfaceMethod);
+                            Debug.Assert(method != null);
+                            isExactMethodResolved = true;
+                        }
+                    }
+
+                    if (!isExactMethodResolved)
+                    {
+                        // We couldn't resolve the interface statically
+                        // Notify the caller that it should use runtime lookup
+                        // Note that we can leave pMD incorrect, because we will use runtime lookup
+                        forceRuntimeLookup = true;
+                    }
+                }
+                else
+                {
+                    // If we can resolve the interface exactly then do so (e.g. when doing the exact
+                    // lookup at runtime, or when not sharing generic code).
+                    if (canonType.CanCastTo(interfaceType))
+                    {
+                        method = canonType.ResolveInterfaceMethodToVirtualMethodOnType(genInterfaceMethod);
+                    }
+                }
             }
             else if (genInterfaceMethod.IsVirtual)
             {

@@ -3133,7 +3133,7 @@ namespace Internal.JitInterface
 
             bool allowInstParam = (flags & CORINFO_CALLINFO_FLAGS.CORINFO_CALLINFO_ALLOWINSTPARAM) != 0;
 
-            if (directCall && !allowInstParam && targetMethod.GetCanonMethodTarget(CanonicalFormKind.Specific).RequiresInstArg())
+            if (directCall && (!allowInstParam && targetMethod.GetCanonMethodTarget(CanonicalFormKind.Specific).RequiresInstArg()) || forceUseRuntimeLookup)
             {
                 // JIT needs a single address to call this method but the method needs a hidden argument.
                 // We need a fat function pointer for this that captures both things.
@@ -3202,7 +3202,6 @@ namespace Internal.JitInterface
                     // (Note: The generic lookup in R2R is performed by a call to a helper at runtime, not by
                     // codegen emitted at crossgen time)
 
-                    Debug.Assert(!forceUseRuntimeLookup);
                     pResult.codePointerOrStubLookup.constLookup = 
                         CreateConstLookupToSymbol(_compilation.NodeFactory.MethodEntrypoint(targetMethod));
                 }
