@@ -96,6 +96,7 @@ namespace ILCompiler
                   new AttributeDrivenLazyGenericsPolicy(), 
                   null, 
                   dictionaryLayoutProvider,
+                  new DevirtualizationManager(),
                   importedNodeProvider)
         {
             CreateHostedNodeCaches();

@@ -37,6 +37,7 @@ namespace ILCompiler.DependencyAnalysis
             LazyGenericsPolicy lazyGenericsPolicy,
             VTableSliceProvider vtableSliceProvider,
             DictionaryLayoutProvider dictionaryLayoutProvider,
+            DevirtualizationManager devirtualizationManager,
             ImportedNodeProvider importedNodeProvider)
         {
             _target = context.Target;
@@ -44,6 +45,7 @@ namespace ILCompiler.DependencyAnalysis
             _compilationModuleGroup = compilationModuleGroup;
             _vtableSliceProvider = vtableSliceProvider;
             _dictionaryLayoutProvider = dictionaryLayoutProvider;
+            DevirtualizationManager = devirtualizationManager;
             NameMangler = nameMangler;
             InteropStubManager = interoptStubManager;
             CreateNodeCaches();
@@ -85,6 +87,11 @@ namespace ILCompiler.DependencyAnalysis
         }
 
         public MetadataManager MetadataManager
+        {
+            get;
+        }
+
+        public DevirtualizationManager DevirtualizationManager
         {
             get;
         }

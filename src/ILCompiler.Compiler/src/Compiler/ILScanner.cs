@@ -30,7 +30,7 @@ namespace ILCompiler
             IEnumerable<ICompilationRootProvider> roots,
             DebugInformationProvider debugInformationProvider,
             Logger logger)
-            : base(dependencyGraph, nodeFactory, roots, debugInformationProvider, null, logger)
+            : base(dependencyGraph, nodeFactory, roots, debugInformationProvider, logger)
         {
         }
 

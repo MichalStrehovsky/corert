@@ -14,14 +14,15 @@ namespace ILCompiler.DependencyAnalysis
 
         public WebAssemblyCodegenNodeFactory(CompilerTypeSystemContext context, CompilationModuleGroup compilationModuleGroup, MetadataManager metadataManager,
             InteropStubManager interopStubManager, NameMangler nameMangler, VTableSliceProvider vtableSliceProvider, DictionaryLayoutProvider dictionaryLayoutProvider)
-            : base(context, 
-                  compilationModuleGroup, 
-                  metadataManager, 
-                  interopStubManager, 
-                  nameMangler, 
-                  new LazyGenericsDisabledPolicy(), 
-                  vtableSliceProvider, 
-                  dictionaryLayoutProvider, 
+            : base(context,
+                  compilationModuleGroup,
+                  metadataManager,
+                  interopStubManager,
+                  nameMangler,
+                  new LazyGenericsDisabledPolicy(),
+                  vtableSliceProvider,
+                  dictionaryLayoutProvider,
+                  new DevirtualizationManager(),
                   new ImportedNodeProviderThrowing())
         {
             _vTableSlotNodes = new NodeCache<MethodDesc, WebAssemblyVTableSlotNode>(methodKey =>

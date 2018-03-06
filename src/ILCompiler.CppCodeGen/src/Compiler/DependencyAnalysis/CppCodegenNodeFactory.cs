@@ -20,6 +20,7 @@ namespace ILCompiler.DependencyAnalysis
                   new LazyGenericsDisabledPolicy(), 
                   vtableSliceProvider, 
                   dictionaryLayoutProvider, 
+                  new DevirtualizationManager(),
                   new ImportedNodeProviderThrowing())
         {
         }
