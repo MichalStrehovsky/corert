@@ -768,7 +768,7 @@ namespace ILCompiler.DependencyAnalysis
 
                 // Final NewSlot methods cannot be overridden, and therefore can be placed in the sealed-vtable to reduce the size of the vtable
                 // of this type and any type that inherits from it.
-                if (declMethod.CanMethodBeInSealedVTable() && !declType.IsArrayTypeWithoutGenericInterfaces() && !factory.IsCppCodegenTemporaryWorkaround)
+                if (declMethod.CanMethodBeInSealedVTable(factory.DevirtualizationManager) && !declType.IsArrayTypeWithoutGenericInterfaces() && !factory.IsCppCodegenTemporaryWorkaround)
                     continue;
 
                 if (!implMethod.IsAbstract)

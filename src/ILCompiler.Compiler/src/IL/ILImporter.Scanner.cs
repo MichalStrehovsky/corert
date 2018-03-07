@@ -501,7 +501,7 @@ namespace Internal.IL
             }
             else
             {
-                if (!targetMethod.IsVirtual || targetMethod.IsFinal || targetMethod.OwningType.IsSealed())
+                if (!targetMethod.IsVirtual || _compilation.IsEffectivelySealed(targetMethod))
                 {
                     directCall = true;
                 }

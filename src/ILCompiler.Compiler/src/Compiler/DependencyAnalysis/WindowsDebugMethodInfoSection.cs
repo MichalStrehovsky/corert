@@ -75,10 +75,11 @@ namespace ILCompiler.DependencyAnalysis
                 moduleMethods.Add(new SortedDictionary<uint, int>());
             }
 
+            DevirtualizationManager devirtualizationManager = factory.DevirtualizationManager;
             foreach (TypeDesc type in factory.MetadataManager.GetTypesWithConstructedEETypes())
             {
                 // skip if sealed
-                if (type.IsSealed())
+                if (devirtualizationManager.IsEffectivelySealed(type))
                     continue;
 
                 // no generic support yet 
@@ -91,7 +92,7 @@ namespace ILCompiler.DependencyAnalysis
                     foreach (MethodDesc md in type.GetAllMethods())
                     {
                         // skip non-virtual and final methods
-                        if (!md.IsVirtual || md.IsFinal)
+                        if (!md.IsVirtual || devirtualizationManager.IsEffectivelySealed(md))
                             continue;
                         // skip generic 
                         if (md.HasInstantiation)

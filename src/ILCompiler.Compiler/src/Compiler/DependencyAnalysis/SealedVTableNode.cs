@@ -100,7 +100,7 @@ namespace ILCompiler.DependencyAnalysis
             {
                 MethodDesc implMethod = _type.GetClosestDefType().FindVirtualFunctionTargetMethodOnObjectType(virtualSlots[i]);
 
-                if (implMethod.CanMethodBeInSealedVTable())
+                if (implMethod.CanMethodBeInSealedVTable(factory.DevirtualizationManager))
                     _sealedVTableEntries.Add(implMethod);
             }
 
@@ -117,7 +117,7 @@ namespace ILCompiler.DependencyAnalysis
 
                     // Interface methods first implemented by a base type in the hierarchy will return null for the implMethod (runtime interface
                     // dispatch will walk the inheritance chain).
-                    if (implMethod != null && implMethod.CanMethodBeInSealedVTable() && implMethod.OwningType != _type)
+                    if (implMethod != null && implMethod.CanMethodBeInSealedVTable(factory.DevirtualizationManager) && implMethod.OwningType != _type)
                         _sealedVTableEntries.Add(implMethod);
                 }
             }

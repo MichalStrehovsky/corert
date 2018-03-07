@@ -123,9 +123,9 @@ namespace ILCompiler
         /// since all of their collection interface methods are sealed and implemented on the System.Array and 
         /// System.Array&lt;T&gt; base types, and therefore we can minimize the vtable sizes of all derived array types.
         /// </summary>
-        public static bool CanMethodBeInSealedVTable(this MethodDesc method)
+        public static bool CanMethodBeInSealedVTable(this MethodDesc method, DevirtualizationManager devirtualizationManager)
         {
-            return method.IsFinal && method.IsNewSlot;
+            return method.IsNewSlot && devirtualizationManager.IsEffectivelySealed(method);
         }
     }
 }

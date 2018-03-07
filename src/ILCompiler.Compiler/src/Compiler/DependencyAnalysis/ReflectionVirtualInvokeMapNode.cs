@@ -41,7 +41,7 @@ namespace ILCompiler.DependencyAnalysis
         public override bool StaticDependenciesAreComputed => true;
         protected override string GetName(NodeFactory factory) => this.GetMangledName(factory.NameMangler);
 
-        public static bool NeedsVirtualInvokeInfo(MethodDesc method)
+        public static bool NeedsVirtualInvokeInfo(MethodDesc method, DevirtualizationManager devirtualizationManager)
         {
             if (!method.IsVirtual)
                 return false;
@@ -49,10 +49,7 @@ namespace ILCompiler.DependencyAnalysis
             if (method.OwningType.IsInterface)
                 return true;
 
-            if (method.IsFinal)
-                return false;
-
-            if (method.OwningType.IsSealed())
+            if (devirtualizationManager.IsEffectivelySealed(method))
                 return false;
 
             return true;
@@ -91,7 +88,7 @@ namespace ILCompiler.DependencyAnalysis
             if (!factory.MetadataManager.SupportsReflection)
                 return;
 
-            if (NeedsVirtualInvokeInfo(method))
+            if (NeedsVirtualInvokeInfo(method, factory.DevirtualizationManager))
             {
                 dependencies = dependencies ?? new DependencyList();
 
@@ -154,7 +151,7 @@ namespace ILCompiler.DependencyAnalysis
                     continue;
 
                 // Only virtual methods are interesting
-                if (!NeedsVirtualInvokeInfo(method))
+                if (!NeedsVirtualInvokeInfo(method, factory.DevirtualizationManager))
                     continue;
 
                 //

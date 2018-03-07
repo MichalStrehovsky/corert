@@ -33,7 +33,7 @@ namespace ILCompiler.DependencyAnalysis
                         MethodDesc targetMethod = (MethodDesc)Target;
 
                         Debug.Assert(!targetMethod.OwningType.IsInterface);
-                        Debug.Assert(!targetMethod.CanMethodBeInSealedVTable());
+                        //Debug.Assert(!targetMethod.CanMethodBeInSealedVTable(factory.DevirtualizationManager));
 
                         int pointerSize = factory.Target.PointerSize;
 
@@ -163,7 +163,7 @@ namespace ILCompiler.DependencyAnalysis
 
                         if (target.TargetNeedsVTableLookup)
                         {
-                            Debug.Assert(!target.TargetMethod.CanMethodBeInSealedVTable());
+                            //Debug.Assert(!target.TargetMethod.CanMethodBeInSealedVTable(factory.DevirtualizationManager));
 
                             encoder.EmitLDR(encoder.TargetRegister.Arg2, encoder.TargetRegister.Arg1);
 

@@ -859,7 +859,7 @@ namespace Internal.JitInterface
 
             // Normalize to the slot defining method. We don't have slot information for the overrides.
             methodDesc = MetadataVirtualMethodAlgorithm.FindSlotDefiningMethodForVirtualMethod(methodDesc);
-            Debug.Assert(!methodDesc.CanMethodBeInSealedVTable());
+            //Debug.Assert(!methodDesc.CanMethodBeInSealedVTable(_compilation.NodeFactory.DevirtualizationManager));
 
             int slot = VirtualMethodSlotHelper.GetVirtualMethodSlot(_compilation.NodeFactory, methodDesc, methodDesc.OwningType);
             Debug.Assert(slot != -1);
@@ -3129,7 +3129,7 @@ namespace Internal.JitInterface
             }
             else
             {
-                if (!targetMethod.IsVirtual || targetMethod.IsFinal || targetMethod.OwningType.IsSealed())
+                if (!targetMethod.IsVirtual || _compilation.IsEffectivelySealed(targetMethod))
                 {
                     resolvedCallVirt = true;
                     directCall = true;

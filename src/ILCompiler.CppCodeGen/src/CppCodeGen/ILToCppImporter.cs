@@ -1151,7 +1151,7 @@ namespace Internal.IL
             {
                 // TODO: Null checks
 
-                if (method.IsVirtual && !method.IsFinal && !method.OwningType.IsSealed())
+                if (method.IsVirtual && !_compilation.IsEffectivelySealed(method))
                 {
                     // TODO: Full resolution of virtual methods
                     if (!method.IsNewSlot)
