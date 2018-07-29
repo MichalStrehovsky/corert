@@ -102,7 +102,7 @@ namespace ILCompiler.DependencyAnalysis
 
             dependencyList.Add(factory.VTable(closestDefType), "VTable");
 
-            if (closestDefType.HasInstantiation && factory.MetadataManager.SupportsReflection)
+            if (closestDefType.HasInstantiation && !factory.MetadataManager.IsReflectionBlocked(_type))
             {
                 TypeDesc canonType = _type.ConvertToCanonForm(CanonicalFormKind.Specific);
                 TypeDesc canonClosestDefType = closestDefType.ConvertToCanonForm(CanonicalFormKind.Specific);

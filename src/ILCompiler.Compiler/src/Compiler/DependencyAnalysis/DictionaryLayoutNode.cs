@@ -154,7 +154,7 @@ namespace ILCompiler.DependencyAnalysis
                 }
                 else
                 {
-                    yield return new DependencyListEntry(factory.NativeLayout.TemplateTypeLayout((TypeDesc)_owningMethodOrType), "Type loader template");
+                    //yield return new DependencyListEntry(factory.NativeLayout.TemplateTypeLayout((TypeDesc)_owningMethodOrType), "Type loader template");
                 }
             }
 

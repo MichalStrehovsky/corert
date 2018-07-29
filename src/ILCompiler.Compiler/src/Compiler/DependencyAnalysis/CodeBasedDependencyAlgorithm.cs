@@ -95,7 +95,7 @@ namespace ILCompiler.DependencyAnalysis
                 if (factory.TypeSystemContext.IsSpecialUnboxingThunk(method))
                     owningTemplateType = factory.TypeSystemContext.GetTargetOfSpecialUnboxingThunk(method).OwningType;
 
-                GenericTypesTemplateMap.GetTemplateTypeDependencies(ref dependencies, factory, owningTemplateType);
+                //GenericTypesTemplateMap.GetTemplateTypeDependencies(ref dependencies, factory, owningTemplateType);
             }
 
             factory.InteropStubManager.AddDependeciesDueToPInvoke(ref dependencies, factory, method);
