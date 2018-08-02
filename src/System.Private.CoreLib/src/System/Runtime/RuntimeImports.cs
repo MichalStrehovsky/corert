@@ -1047,7 +1047,7 @@ namespace System.Runtime
         // Only the values defined below are valid. Any other value returned from RhGetCorElementType
         // indicates only that the type is not one of the primitives defined below and is otherwise undefined
         // and subject to change.
-        internal enum RhCorElementType : byte
+        private enum RhCorElementType : byte
         {
             ELEMENT_TYPE_BOOLEAN = 0x2,
             ELEMENT_TYPE_CHAR = 0x3,
@@ -1065,7 +1065,7 @@ namespace System.Runtime
             ELEMENT_TYPE_U = 0x19,
         }
 
-        internal static RhCorElementTypeInfo GetRhCorElementTypeInfo(RuntimeImports.RhCorElementType elementType)
+        internal static RhCorElementTypeInfo GetRhCorElementTypeInfo(EETypeElementType elementType)
         {
             return RhCorElementTypeInfo.GetRhCorElementTypeInfo(elementType);
         }
@@ -1110,7 +1110,12 @@ namespace System.Runtime
             // This is a port of InvokeUtil::CanPrimitiveWiden() in the desktop runtime. This is used by various apis such as Array.SetValue()
             // and Delegate.DynamicInvoke() which allow value-preserving widenings from one primitive type to another.
             //
-            public bool CanWidenTo(RuntimeImports.RhCorElementType targetElementType)
+            public bool CanWidenTo(EETypeElementType targetElementType)
+            {
+                return CanWidenTo(ElementTypeToCorElementType(targetElementType));
+            }
+
+            private bool CanWidenTo(RuntimeImports.RhCorElementType targetElementType)
             {
                 // Caller expected to ensure that both sides are primitive before calling us.
                 Debug.Assert(this.IsPrimitive);
@@ -1125,7 +1130,12 @@ namespace System.Runtime
                 return false;
             }
 
-            internal static RhCorElementTypeInfo GetRhCorElementTypeInfo(RuntimeImports.RhCorElementType elementType)
+            public static RhCorElementTypeInfo GetRhCorElementTypeInfo(EETypeElementType elementType)
+            {
+                return GetRhCorElementTypeInfo(ElementTypeToCorElementType(elementType));
+            }
+
+            private static RhCorElementTypeInfo GetRhCorElementTypeInfo(RuntimeImports.RhCorElementType elementType)
             {
                 // The _lookupTable array only covers a subset of RhCorElementTypes, so we return a default 
                 // info when someone asks for an elementType which does not have an entry in the table.
@@ -1135,6 +1145,38 @@ namespace System.Runtime
                 return s_lookupTable[(int)elementType];
             }
 
+            private static RhCorElementType ElementTypeToCorElementType(EETypeElementType elementType)
+            {
+                switch (elementType)
+                {
+                    case EETypeElementType.Boolean:
+                        return RhCorElementType.ELEMENT_TYPE_BOOLEAN;
+                    case EETypeElementType.Char:
+                        return RhCorElementType.ELEMENT_TYPE_CHAR;
+                    case EETypeElementType.SByte:
+                        return RhCorElementType.ELEMENT_TYPE_I1;
+                    case EETypeElementType.Byte:
+                        return RhCorElementType.ELEMENT_TYPE_U1;
+                    case EETypeElementType.Int16:
+                        return RhCorElementType.ELEMENT_TYPE_I2;
+                    case EETypeElementType.UInt16:
+                        return RhCorElementType.ELEMENT_TYPE_U2;
+                    case EETypeElementType.Int32:
+                        return RhCorElementType.ELEMENT_TYPE_I4;
+                    case EETypeElementType.UInt32:
+                        return RhCorElementType.ELEMENT_TYPE_U4;
+                    case EETypeElementType.Single:
+                        return RhCorElementType.ELEMENT_TYPE_R4;
+                    case EETypeElementType.Double:
+                        return RhCorElementType.ELEMENT_TYPE_R8;
+                    case EETypeElementType.IntPtr:
+                        return RhCorElementType.ELEMENT_TYPE_I;
+                    case EETypeElementType.UIntPtr:
+                        return RhCorElementType.ELEMENT_TYPE_U;
+                    default:
+                        return default;
+                }
+            }
 
             private byte _log2OfSize;
             private RhCorElementTypeInfoFlags _flags;

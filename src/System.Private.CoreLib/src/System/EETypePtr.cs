@@ -17,6 +17,7 @@ using System.Runtime.InteropServices;
 using System.Runtime.CompilerServices;
 
 using EEType = Internal.Runtime.EEType;
+using EETypeElementType = Internal.Runtime.EETypeElementType;
 using EETypeRef = Internal.Runtime.EETypeRef;
 
 namespace System
@@ -175,10 +176,7 @@ namespace System
         {
             get
             {
-                RuntimeImports.RhCorElementType et = CorElementType;
-                return ((et >= RuntimeImports.RhCorElementType.ELEMENT_TYPE_BOOLEAN) && (et <= RuntimeImports.RhCorElementType.ELEMENT_TYPE_R8)) ||
-                    (et == RuntimeImports.RhCorElementType.ELEMENT_TYPE_I) ||
-                    (et == RuntimeImports.RhCorElementType.ELEMENT_TYPE_U);
+                return ElementType < EETypeElementType.ValueType;
             }
         }
 
@@ -376,13 +374,11 @@ namespace System
             }
         }
 
-        internal RuntimeImports.RhCorElementType CorElementType
+        internal EETypeElementType ElementType
         {
             get
             {
-                Debug.Assert((int)Internal.Runtime.CorElementType.ELEMENT_TYPE_I1 == (int)RuntimeImports.RhCorElementType.ELEMENT_TYPE_I1);
-                Debug.Assert((int)Internal.Runtime.CorElementType.ELEMENT_TYPE_R8 == (int)RuntimeImports.RhCorElementType.ELEMENT_TYPE_R8);
-                return (RuntimeImports.RhCorElementType)_value->CorElementType;
+                return _value->ElementType;
             }
         }
 
@@ -390,7 +386,7 @@ namespace System
         {
             get
             {
-                RuntimeImports.RhCorElementType corElementType = this.CorElementType;
+                EETypeElementType corElementType = this.ElementType;
                 return RuntimeImports.GetRhCorElementTypeInfo(corElementType);
             }
         }

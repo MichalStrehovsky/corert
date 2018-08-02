@@ -711,7 +711,7 @@ namespace Internal.Runtime.Augments
                 return false;
             if (!dstEEType.IsPrimitive)
                 return false;
-            if (!srcEEType.CorElementTypeInfo.CanWidenTo(dstEEType.CorElementType))
+            if (!srcEEType.CorElementTypeInfo.CanWidenTo(dstEEType.ElementType))
                 return false;
             return true;
         }
@@ -908,7 +908,7 @@ namespace Internal.Runtime.Augments
 
         public static int GetCorElementType(RuntimeTypeHandle type)
         {
-            return (int)type.ToEETypePtr().CorElementType;
+            return (int)type.ToEETypePtr().ElementType;
         }
 
         // Move memory which may be on the heap which may have object references in it.

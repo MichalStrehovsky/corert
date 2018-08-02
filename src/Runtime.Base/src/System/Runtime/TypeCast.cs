@@ -181,7 +181,8 @@ namespace System.Runtime
                 return;
             }
 
-            if (obj.EEType->CorElementType == (CorElementType)expectedCorElementType)
+            // TODO: UTC annoyingly hardcodes this as CorElementType, so need to fix UTC
+            if (obj.EEType->ElementType == (EETypeElementType)expectedCorElementType)
                 return;
 
             // Throw the invalid cast exception defined by the classlib, using the input object's EEType* 
@@ -997,37 +998,37 @@ namespace System.Runtime
         // Returns true of the two types are equivalent primitive types. Used by array casts.
         private static unsafe bool ArePrimitveTypesEquivalentSize(EEType* pType1, EEType* pType2)
         {
-            CorElementType sourceCorType = pType1->CorElementType;
+            EETypeElementType sourceCorType = pType1->ElementType;
             int sourcePrimitiveTypeEquivalenceSize = GetIntegralTypeMatchSize(sourceCorType);
 
             // Quick check to see if the first type is even primitive.
             if (sourcePrimitiveTypeEquivalenceSize == 0)
                 return false;
 
-            CorElementType targetCorType = pType2->CorElementType;
+            EETypeElementType targetCorType = pType2->ElementType;
             int targetPrimitiveTypeEquivalenceSize = GetIntegralTypeMatchSize(targetCorType);
 
             return sourcePrimitiveTypeEquivalenceSize == targetPrimitiveTypeEquivalenceSize;
         }
 
-        private static unsafe int GetIntegralTypeMatchSize(CorElementType corType)
+        private static unsafe int GetIntegralTypeMatchSize(EETypeElementType elementType)
         {
-            switch (corType)
+            switch (elementType)
             {
-                case CorElementType.ELEMENT_TYPE_I1:
-                case CorElementType.ELEMENT_TYPE_U1:
+                case EETypeElementType.Byte:
+                case EETypeElementType.SByte:
                     return 1;
-                case CorElementType.ELEMENT_TYPE_I2:
-                case CorElementType.ELEMENT_TYPE_U2:
+                case EETypeElementType.Int16:
+                case EETypeElementType.UInt16:
                     return 2;
-                case CorElementType.ELEMENT_TYPE_I4:
-                case CorElementType.ELEMENT_TYPE_U4:
+                case EETypeElementType.Int32:
+                case EETypeElementType.UInt32:
                     return 4;
-                case CorElementType.ELEMENT_TYPE_I8:
-                case CorElementType.ELEMENT_TYPE_U8:
+                case EETypeElementType.Int64:
+                case EETypeElementType.UInt64:
                     return 8;
-                case CorElementType.ELEMENT_TYPE_I:
-                case CorElementType.ELEMENT_TYPE_U:
+                case EETypeElementType.IntPtr:
+                case EETypeElementType.UIntPtr:
                     return sizeof(IntPtr);
                 default:
                     return 0;
