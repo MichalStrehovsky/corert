@@ -1013,7 +1013,8 @@ namespace System
             // pure powers of 2 OR-ed together, you return a hex value
 
             // Try to see if its one of the enum values, then we return a String back else the value
-            return InternalFormat((RuntimeType)GetType(), ToUInt64()) ?? ValueToString();
+            //return InternalFormat((RuntimeType)GetType(), ToUInt64()) ?? ValueToString();
+            return String.Empty;
         }
         #endregion
 
@@ -1028,12 +1029,12 @@ namespace System
         #region Public Methods
         public string ToString(string format)
         {
-            if (string.IsNullOrEmpty(format))
+            //if (string.IsNullOrEmpty(format))
             {
                 return ToString();
             }
 
-            if (format.Length == 1)
+            /*if (format.Length == 1)
             {
                 switch (format[0])
                 {
@@ -1055,7 +1056,7 @@ namespace System
                 }
             }
 
-            throw new FormatException(SR.Format_InvalidEnumFormatSpecification);
+            throw new FormatException(SR.Format_InvalidEnumFormatSpecification);*/
         }
 
         [Obsolete("The provider argument is not used. Please use ToString().")]

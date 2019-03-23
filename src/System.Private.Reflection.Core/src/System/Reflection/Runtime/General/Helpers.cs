@@ -224,7 +224,7 @@ namespace System.Reflection.Runtime.General
                     }
                     else
                     {
-                        CustomConstantAttribute customConstantAttribute = (CustomConstantAttribute)(cad.Instantiate());
+                        CustomConstantAttribute customConstantAttribute = (CustomConstantAttribute)null;//(cad.Instantiate());
                         defaultValue = customConstantAttribute.Value;
                         return true;
                     }
@@ -233,7 +233,7 @@ namespace System.Reflection.Runtime.General
                 {
                     // We should really do a non-instanting check if "raw == false" but given that we don't support
                     // reflection-only loads, there isn't an observable difference.
-                    DecimalConstantAttribute decimalConstantAttribute = (DecimalConstantAttribute)(cad.Instantiate());
+                    DecimalConstantAttribute decimalConstantAttribute = (DecimalConstantAttribute)null;//(cad.Instantiate());
                     defaultValue = decimalConstantAttribute.Value;
                     return true;
                 }
