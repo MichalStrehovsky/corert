@@ -81,6 +81,9 @@ namespace ILCompiler.DependencyAnalysis
             dependencies.Add(new DependencyListEntry(factory.MethodEntrypoint(method), "Dynamic invoke stub"));
             dependencies.Add(new DependencyListEntry(factory.NativeLayout.PlacedSignatureVertex(factory.NativeLayout.MethodNameAndSignatureVertex(method)), "Dynamic invoke stub"));
             dependencies.Add(new DependencyListEntry(factory.NecessaryTypeSymbol(method.OwningType), "Dynamic invoke stub containing type"));
+
+            // We'll use the template type loader to make generic dictionaries for these. Ensure there's template dependencies.
+            GenericMethodsTemplateMap.GetTemplateMethodDependencies(ref dependencies, factory, method);
         }
 
         public override ObjectData GetData(NodeFactory factory, bool relocsOnly = false)

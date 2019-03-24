@@ -145,29 +145,34 @@ namespace ILCompiler.DependencyAnalysis
 
         public override IEnumerable<DependencyListEntry> GetStaticDependencies(NodeFactory factory)
         {
+            DependencyList dependencies = null;
+
             if (factory.MetadataManager.SupportsReflection)
             {
                 // Root the template for the type. In the future, we may want to control this via type reflectability instead.
-                if (_owningMethodOrType is MethodDesc)
+                if (_owningMethodOrType is MethodDesc method)
                 {
-                    yield return new DependencyListEntry(factory.NativeLayout.TemplateMethodLayout((MethodDesc)_owningMethodOrType), "Type loader template");
+                    GenericMethodsTemplateMap.GetTemplateMethodDependencies(ref dependencies, factory, method);
                 }
                 else
                 {
-                    yield return new DependencyListEntry(factory.NativeLayout.TemplateTypeLayout((TypeDesc)_owningMethodOrType), "Type loader template");
+                    GenericTypesTemplateMap.GetTemplateTypeDependencies(ref dependencies, factory, (TypeDesc)_owningMethodOrType);
                 }
             }
 
             if (HasFixedSlots)
             {
+                dependencies = dependencies ?? new DependencyList();
                 foreach (GenericLookupResult lookupResult in FixedEntries)
                 {
                     foreach (DependencyNodeCore<NodeFactory> dependency in lookupResult.NonRelocDependenciesFromUsage(factory))
                     {
-                        yield return new DependencyListEntry(dependency, "GenericLookupResultDependency");
+                        dependencies.Add(dependency, "GenericLookupResultDependency");
                     }
                 }
             }
+
+            return dependencies;
         }
 
         public override IEnumerable<CombinedDependencyListEntry> GetConditionalStaticDependencies(NodeFactory factory)

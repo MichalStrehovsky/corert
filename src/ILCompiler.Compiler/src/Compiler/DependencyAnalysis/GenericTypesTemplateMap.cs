@@ -97,24 +97,21 @@ namespace ILCompiler.DependencyAnalysis
             if (!factory.MetadataManager.SupportsReflection)
                 return;
 
-            TypeDesc templateType = ConvertArrayOfTToRegularArray(factory, type);
-
-            if (!IsEligibleToHaveATemplate(templateType))
+            if (!IsEligibleToHaveATemplate(type))
                 return;
 
             if ((factory.Target.Abi == TargetAbi.ProjectN) && !ProjectNDependencyBehavior.EnableFullAnalysis)
             {
                 // If the type does not have fully constructed type, don't track its dependencies.
                 // TODO: Remove the workaround once we stop using the STS dependency analysis.
-                IDependencyNode node = factory.MaximallyConstructableType(templateType);
+                IDependencyNode node = factory.MaximallyConstructableType(type);
 
                 if (!node.Marked)
                     return;
             }
 
             dependencies = dependencies ?? new DependencyList();
-            dependencies.Add(new DependencyListEntry(factory.NecessaryTypeSymbol(templateType), "Template type"));
-            dependencies.Add(new DependencyListEntry(factory.NativeLayout.TemplateTypeLayout(templateType), "Template Type Layout"));
+            dependencies.Add(new DependencyListEntry(factory.NativeLayout.TemplateTypeLayout(type), "Template Type Layout"));
         }
 
         /// <summary>
