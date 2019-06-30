@@ -3,43 +3,32 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Diagnostics;
 
 using Internal.TypeSystem;
 using Internal.IL;
 using Internal.IL.Stubs;
-using System.Diagnostics;
 
 namespace ILCompiler
 {
-    public static class HardwareIntrinsicHelpers
+    public abstract class HardwareIntrinsicHelper
     {
         /// <summary>
         /// Gets a value indicating whether this is a hardware intrinsic on the platform that we're compiling for.
         /// </summary>
-        public static bool IsHardwareIntrinsic(MethodDesc method)
-        {
-            TypeDesc owningType = method.OwningType;
+        public abstract bool IsHardwareIntrinsic(MethodDesc method);
 
-            if (owningType.IsIntrinsic && owningType is MetadataType mdType)
-            {
-                TargetArchitecture targetArch = owningType.Context.Target.Architecture;
+        /// <summary>
+        /// Gets a value indicating whether the `IsSupported` property value for a given intrinsic method class
+        /// is known at compile time.
+        /// </summary>
+        public abstract bool IsKnownSupportedIntrinsicAtCompileTime(MethodDesc method);
 
-                if (targetArch == TargetArchitecture.X64 || targetArch == TargetArchitecture.X86)
-                {
-                    mdType = (MetadataType)mdType.ContainingType ?? mdType;
-                    if (mdType.Namespace == "System.Runtime.Intrinsics.X86")
-                        return true;
-                }
-                else if (targetArch == TargetArchitecture.ARM64)
-                {
-                    if (mdType.Namespace == "System.Runtime.Intrinsics.Arm.Arm64")
-                        return true;
-                }
-            }
+        protected abstract bool TryGetSupportBit(MethodDesc method, out int bit);
 
-            return false;
-        }
-
+        /// <summary>
+        /// Gets a value indicating whether <paramref name="method"/> is a `IsSupported` method.
+        /// </summary>
         public static bool IsIsSupportedMethod(MethodDesc method)
         {
             return method.Name == "get_IsSupported";
@@ -76,55 +65,13 @@ namespace ILCompiler
         /// at startup. Returns null for hardware intrinsics whose support level is known at compile time
         /// (i.e. they're known to be always supported or always unsupported).
         /// </summary>
-        public static MethodIL EmitIsSupportedIL(MethodDesc method, FieldDesc isSupportedField)
+        public MethodIL EmitIsSupportedIL(MethodDesc method, FieldDesc isSupportedField)
         {
             Debug.Assert(IsIsSupportedMethod(method));
             Debug.Assert(isSupportedField.IsStatic && isSupportedField.FieldType.IsWellKnownType(WellKnownType.Int32));
 
-            TargetDetails target = method.Context.Target;
-            MetadataType owningType = (MetadataType)method.OwningType;
-
-            // Check for case of nested "X64" types
-            if (owningType.Name == "X64")
-            {
-                if (target.Architecture != TargetArchitecture.X64)
-                    return null;
-
-                // Un-nest the type so that we can do a name match
-                owningType = (MetadataType)owningType.ContainingType;
-            }
-
-            int flag;
-            if ((target.Architecture == TargetArchitecture.X64 || target.Architecture == TargetArchitecture.X86)
-                && owningType.Namespace == "System.Runtime.Intrinsics.X86")
-            {
-                switch (owningType.Name)
-                {
-                    case "Aes":
-                        flag = XArchIntrinsicConstants.Aes;
-                        break;
-                    case "Pclmulqdq":
-                        flag = XArchIntrinsicConstants.Pclmulqdq;
-                        break;
-                    case "Sse3":
-                        flag = XArchIntrinsicConstants.Sse3;
-                        break;
-                    case "Ssse3":
-                        flag = XArchIntrinsicConstants.Ssse3;
-                        break;
-                    case "Lzcnt":
-                        flag = XArchIntrinsicConstants.Lzcnt;
-                        break;
-                    // NOTE: this switch is complemented by IsKnownSupportedIntrinsicAtCompileTime
-                    // in the method below.
-                    default:
-                        return null;
-                }
-            }
-            else
-            {
+            if (!TryGetSupportBit(method, out int flag))
                 return null;
-            }
 
             var emit = new ILEmitter();
             ILCodeStream codeStream = emit.NewCodeStream();
@@ -139,41 +86,109 @@ namespace ILCompiler
             return emit.Link(method);
         }
 
-        /// <summary>
-        /// Gets a value indicating whether the support for a given intrinsic is known at compile time.
-        /// </summary>
-        public static bool IsKnownSupportedIntrinsicAtCompileTime(MethodDesc method)
+        public static HardwareIntrinsicHelper Create(TargetArchitecture arch)
         {
-            TargetDetails target = method.Context.Target;
-
-            if (target.Architecture == TargetArchitecture.X64
-                || target.Architecture == TargetArchitecture.X86)
+            if (arch == TargetArchitecture.X86 || arch == TargetArchitecture.X64)
             {
-                var owningType = (MetadataType)method.OwningType;
-                if (owningType.Name == "X64")
-                {
-                    if (target.Architecture != TargetArchitecture.X64)
-                        return true;
-                    owningType = (MetadataType)owningType.ContainingType;
-                }
+                return new XArchHardwareIntrinsicHelper();
+            }
+            // TODO
+            throw new NotImplementedException();
+        }
+    }
 
-                if (owningType.Namespace != "System.Runtime.Intrinsics.X86")
+    public class XArchHardwareIntrinsicHelper : HardwareIntrinsicHelper
+    {
+        public override bool IsHardwareIntrinsic(MethodDesc method)
+        {
+            Debug.Assert(method.Context.Target.Architecture == TargetArchitecture.X86
+                || method.Context.Target.Architecture == TargetArchitecture.X64);
+
+            TypeDesc owningType = method.OwningType;
+
+            if (owningType.IsIntrinsic && owningType is MetadataType mdType)
+            {
+                mdType = (MetadataType)mdType.ContainingType ?? mdType;
+                if (mdType.Namespace == "System.Runtime.Intrinsics.X86")
                     return true;
-
-                // Sse and Sse2 are baseline required intrinsics.
-                // RyuJIT also uses Sse41/Sse42 with the general purpose Vector APIs.
-                // RyuJIT only respects Popcnt if Sse41/Sse42 is also enabled.
-                // Avx/Avx2/Bmi1/Bmi2 require VEX encoding and RyuJIT currently can't enable them
-                // without enabling VEX encoding everywhere. We don't support them.
-                // This list complements EmitIsSupportedIL above.
-                return owningType.Name == "Sse" || owningType.Name == "Sse2"
-                    || owningType.Name == "Sse41" || owningType.Name == "Sse42"
-                    || owningType.Name == "Popcnt"
-                    || owningType.Name == "Bmi1" || owningType.Name == "Bmi2"
-                    || owningType.Name == "Avx" || owningType.Name == "Avx2";
             }
 
             return false;
+        }
+
+        public override bool IsKnownSupportedIntrinsicAtCompileTime(MethodDesc method)
+        {
+            Debug.Assert(method.Context.Target.Architecture == TargetArchitecture.X86
+                || method.Context.Target.Architecture == TargetArchitecture.X64);
+
+            var owningType = (MetadataType)method.OwningType;
+            if (owningType.Name == "X64")
+            {
+                if (method.Context.Target.Architecture != TargetArchitecture.X64)
+                    return true;
+                owningType = (MetadataType)owningType.ContainingType;
+            }
+
+            if (owningType.Namespace != "System.Runtime.Intrinsics.X86")
+                return true;
+
+            // Sse and Sse2 are baseline required intrinsics.
+            // RyuJIT also uses Sse41/Sse42 with the general purpose Vector APIs.
+            // RyuJIT only respects Popcnt if Sse41/Sse42 is also enabled.
+            // Avx/Avx2/Bmi1/Bmi2 require VEX encoding and RyuJIT currently can't enable them
+            // without enabling VEX encoding everywhere. We don't support them.
+            // This list complements EmitIsSupportedIL above.
+            return owningType.Name == "Sse" || owningType.Name == "Sse2"
+                || owningType.Name == "Sse41" || owningType.Name == "Sse42"
+                || owningType.Name == "Popcnt"
+                || owningType.Name == "Bmi1" || owningType.Name == "Bmi2"
+                || owningType.Name == "Avx" || owningType.Name == "Avx2";
+        }
+
+        protected override bool TryGetSupportBit(MethodDesc method, out int bit)
+        {
+            MetadataType owningType = (MetadataType)method.OwningType;
+
+            // Check for case of nested "X64" types
+            if (owningType.Name == "X64")
+            {
+                if (method.Context.Target.Architecture != TargetArchitecture.X64)
+                {
+                    bit = 0;
+                    return false;
+                }
+
+                // Un-nest the type so that we can do a name match
+                owningType = (MetadataType)owningType.ContainingType;
+            }
+
+            Debug.Assert(owningType.Namespace == "System.Runtime.Intrinsics.X86");
+
+            switch (owningType.Name)
+            {
+                case "Aes":
+                    bit = XArchIntrinsicConstants.Aes;
+                    break;
+                case "Pclmulqdq":
+                    bit = XArchIntrinsicConstants.Pclmulqdq;
+                    break;
+                case "Sse3":
+                    bit = XArchIntrinsicConstants.Sse3;
+                    break;
+                case "Ssse3":
+                    bit = XArchIntrinsicConstants.Ssse3;
+                    break;
+                case "Lzcnt":
+                    bit = XArchIntrinsicConstants.Lzcnt;
+                    break;
+                // NOTE: this switch is complemented by IsKnownSupportedIntrinsicAtCompileTime
+                // in the method above.
+                default:
+                    bit = 0;
+                    return false;
+            }
+
+            return true;
         }
 
         // Keep this enumeration in sync with startup.cpp in the native runtime.
@@ -188,5 +203,14 @@ namespace ILCompiler
             public const int Popcnt = 0x0040;
             public const int Lzcnt = 0x0080;
         }
+    }
+
+    public enum XArchIntrinsicSupportLevel
+    {
+        Sse2 = 0,
+        Sse3,
+        Sse42,
+        Avx,
+        Avx2
     }
 }

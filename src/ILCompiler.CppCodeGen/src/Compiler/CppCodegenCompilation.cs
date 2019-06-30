@@ -22,13 +22,14 @@ namespace ILCompiler
         internal CppCodegenCompilation(
             DependencyAnalyzerBase<NodeFactory> dependencyGraph,
             NodeFactory nodeFactory,
+            HardwareIntrinsicHelper hardwareIntrinsicHelper,
             IEnumerable<ICompilationRootProvider> roots,
             ILProvider ilProvider,
             DebugInformationProvider debugInformationProvider,
             PInvokeILEmitterConfiguration pinvokePolicy,
             Logger logger,
             CppCodegenConfigProvider options)
-            : base(dependencyGraph, nodeFactory, GetCompilationRoots(roots, nodeFactory), ilProvider, debugInformationProvider, null, pinvokePolicy, logger)
+            : base(dependencyGraph, nodeFactory, hardwareIntrinsicHelper, GetCompilationRoots(roots, nodeFactory), ilProvider, debugInformationProvider, null, pinvokePolicy, logger)
         {
             Options = options;
         }

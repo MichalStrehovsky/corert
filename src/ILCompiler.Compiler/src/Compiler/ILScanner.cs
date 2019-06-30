@@ -32,7 +32,7 @@ namespace ILCompiler
             DebugInformationProvider debugInformationProvider,
             PInvokeILEmitterConfiguration pinvokePolicy,
             Logger logger)
-            : base(dependencyGraph, nodeFactory, roots, ilProvider, debugInformationProvider, null, pinvokePolicy, logger)
+            : base(dependencyGraph, nodeFactory, null, roots, ilProvider, debugInformationProvider, null, pinvokePolicy, logger)
         {
         }
 

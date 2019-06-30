@@ -57,6 +57,7 @@ namespace ILCompiler
         private bool _completeTypesMetadata;
         private bool _scanReflection;
         private bool _methodBodyFolding;
+        private string _targetMachineArchitectureStr;
 
         private string _singleMethodTypeName;
         private string _singleMethodName;
@@ -192,6 +193,7 @@ namespace ILCompiler
 
                 syntax.DefineOption("targetarch", ref _targetArchitectureStr, "Target architecture for cross compilation");
                 syntax.DefineOption("targetos", ref _targetOSStr, "Target OS for cross compilation");
+                syntax.DefineOption("targetmarch", ref _targetMachineArchitectureStr, "Target machine architecture");
 
                 syntax.DefineOption("singlemethodtypename", ref _singleMethodTypeName, "Single method compilation: name of the owning type");
                 syntax.DefineOption("singlemethodname", ref _singleMethodName, "Single method compilation: name of the method");
@@ -312,8 +314,13 @@ namespace ILCompiler
             SharedGenericsMode genericsMode = _useSharedGenerics || !_isWasmCodegen ?
                 SharedGenericsMode.CanonicalReferenceTypes : SharedGenericsMode.Disabled;
 
-            // TODO: compiler switch for SIMD support?
             var simdVectorLength = (_isCppCodegen || _isWasmCodegen) ? SimdVectorLength.None : SimdVectorLength.Vector128Bit;
+            if (_targetArchitecture == TargetArchitecture.X86 || _targetArchitecture == TargetArchitecture.X64)
+            {
+                if (_targetMachineArchitectureStr == "avx2")
+                    simdVectorLength = SimdVectorLength.Vector256Bit;
+            }
+
             var targetAbi = _isCppCodegen ? TargetAbi.CppCodegen : TargetAbi.CoreRT;
             var targetDetails = new TargetDetails(_targetArchitecture, _targetOS, targetAbi, simdVectorLength);
             CompilerTypeSystemContext typeSystemContext = (_isReadyToRunCodeGen

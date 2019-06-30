@@ -33,6 +33,7 @@ namespace ILCompiler
         public CompilerTypeSystemContext TypeSystemContext => NodeFactory.TypeSystemContext;
         public Logger Logger => _logger;
         public PInvokeILProvider PInvokeILProvider { get; }
+        public HardwareIntrinsicHelper HardwareIntrinsicHelper { get; }
 
         private readonly TypeGetTypeMethodThunkCache _typeGetTypeMethodThunks;
         private readonly AssemblyGetExecutingAssemblyMethodThunkCache _assemblyGetExecutingAssemblyMethodThunks;
@@ -41,6 +42,7 @@ namespace ILCompiler
         protected Compilation(
             DependencyAnalyzerBase<NodeFactory> dependencyGraph,
             NodeFactory nodeFactory,
+            HardwareIntrinsicHelper intrinsicHelper,
             IEnumerable<ICompilationRootProvider> compilationRoots,
             ILProvider ilProvider,
             DebugInformationProvider debugInformationProvider,
@@ -53,6 +55,7 @@ namespace ILCompiler
             _logger = logger;
             _debugInformationProvider = debugInformationProvider;
             _devirtualizationManager = devirtualizationManager;
+            HardwareIntrinsicHelper = intrinsicHelper;
 
             _dependencyGraph.ComputeDependencyRoutine += ComputeDependencyNodeDependencies;
             NodeFactory.AttachToDependencyGraph(_dependencyGraph);

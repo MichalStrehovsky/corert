@@ -647,8 +647,8 @@ namespace ILCompiler.CppCodeGen
             if (methodIL == null)
                 return;
 
-            if (HardwareIntrinsicHelpers.IsHardwareIntrinsic(method))
-                methodIL = HardwareIntrinsicHelpers.GetUnsupportedImplementationIL(method);
+            if (_compilation.HardwareIntrinsicHelper.IsHardwareIntrinsic(method))
+                methodIL = HardwareIntrinsicHelper.GetUnsupportedImplementationIL(method);
 
             try
             {

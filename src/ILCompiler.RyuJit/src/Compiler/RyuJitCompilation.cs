@@ -25,6 +25,7 @@ namespace ILCompiler
         internal RyuJitCompilation(
             DependencyAnalyzerBase<NodeFactory> dependencyGraph,
             NodeFactory nodeFactory,
+            HardwareIntrinsicHelper hardwareIntrinsicHelper,
             IEnumerable<ICompilationRootProvider> roots,
             ILProvider ilProvider,
             DebugInformationProvider debugInformationProvider,
@@ -33,7 +34,7 @@ namespace ILCompiler
             DevirtualizationManager devirtualizationManager,
             JitConfigProvider configProvider,
             RyuJitCompilationOptions options)
-            : base(dependencyGraph, nodeFactory, roots, ilProvider, debugInformationProvider, devirtualizationManager, pinvokePolicy, logger)
+            : base(dependencyGraph, nodeFactory, hardwareIntrinsicHelper, roots, ilProvider, debugInformationProvider, devirtualizationManager, pinvokePolicy, logger)
         {
             _jitConfigProvider = configProvider;
             _compilationOptions = options;
@@ -98,10 +99,10 @@ namespace ILCompiler
 
         public override MethodIL GetMethodIL(MethodDesc method)
         {
-            if (HardwareIntrinsicHelpers.IsHardwareIntrinsic(method)
-                && HardwareIntrinsicHelpers.IsIsSupportedMethod(method))
+            if (HardwareIntrinsicHelper.IsHardwareIntrinsic(method)
+                && HardwareIntrinsicHelper.IsIsSupportedMethod(method))
             {
-                MethodIL methodIL = HardwareIntrinsicHelpers.EmitIsSupportedIL(method, _hardwareIntrinsicFlags);
+                MethodIL methodIL = HardwareIntrinsicHelper.EmitIsSupportedIL(method, _hardwareIntrinsicFlags);
                 if (methodIL != null)
                     return methodIL;
             }

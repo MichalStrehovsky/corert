@@ -92,12 +92,15 @@ namespace ILCompiler
             if (!(_debugInformationProvider is NullDebugInformationProvider))
                 jitFlagBuilder.Add(CorJitFlag.CORJIT_FLAG_DEBUG_INFO);
 
-            if (_context.Target.MaximumSimdVectorLength != SimdVectorLength.None)
+            TargetDetails target = _context.Target;
+            if (target.MaximumSimdVectorLength != SimdVectorLength.None)
             {
                 // TODO: AVX
-                Debug.Assert(_context.Target.MaximumSimdVectorLength == SimdVectorLength.Vector128Bit);
+                Debug.Assert(target.MaximumSimdVectorLength == SimdVectorLength.Vector128Bit);
                 jitFlagBuilder.Add(CorJitFlag.CORJIT_FLAG_FEATURE_SIMD);
             }
+
+            HardwareIntrinsicHelper hardwareIntrinsicHelper = HardwareIntrinsicHelper.Create(target.Architecture);
 
             RyuJitCompilationOptions options = 0;
             if (_methodBodyFolding)
@@ -108,7 +111,7 @@ namespace ILCompiler
 
             var jitConfig = new JitConfigProvider(jitFlagBuilder.ToArray(), _ryujitOptions);
             DependencyAnalyzerBase<NodeFactory> graph = CreateDependencyGraph(factory, new ObjectNode.ObjectNodeComparer(new CompilerComparer()));
-            return new RyuJitCompilation(graph, factory, _compilationRoots, _ilProvider, _debugInformationProvider, _pinvokePolicy, _logger, _devirtualizationManager, jitConfig, options);
+            return new RyuJitCompilation(graph, factory, hardwareIntrinsicHelper, _compilationRoots, _ilProvider, _debugInformationProvider, _pinvokePolicy, _logger, _devirtualizationManager, jitConfig, options);
         }
     }
 }

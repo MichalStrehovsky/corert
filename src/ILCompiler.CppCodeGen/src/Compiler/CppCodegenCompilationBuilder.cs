@@ -47,8 +47,9 @@ namespace ILCompiler
             var interopStubManager = new CompilerGeneratedInteropStubManager(_compilationGroup, _context, new InteropStateManager(_context.GeneratedAssembly));
             CppCodegenNodeFactory factory = new CppCodegenNodeFactory(_context, _compilationGroup, _metadataManager, interopStubManager, _nameMangler, _vtableSliceProvider, _dictionaryLayoutProvider);
             DependencyAnalyzerBase<NodeFactory> graph = CreateDependencyGraph(factory);
+            HardwareIntrinsicHelper hardwareIntrinsicHelper = HardwareIntrinsicHelper.Create(_context.Target.Architecture);
 
-            return new CppCodegenCompilation(graph, factory, _compilationRoots, _ilProvider, _debugInformationProvider, _pinvokePolicy, _logger, _config);
+            return new CppCodegenCompilation(graph, factory, hardwareIntrinsicHelper, _compilationRoots, _ilProvider, _debugInformationProvider, _pinvokePolicy, _logger, _config);
         }
     }
 
