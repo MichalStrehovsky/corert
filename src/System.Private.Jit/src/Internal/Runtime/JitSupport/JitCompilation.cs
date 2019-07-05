@@ -38,6 +38,8 @@ namespace ILCompiler
         internal Logger Logger => _logger;
         internal PInvokeILProvider PInvokeILProvider => _pInvokeILProvider;
 
+        public HardwareIntrinsicHelper HardwareIntrinsicHelper { get; } = new XArchHardwareIntrinsicHelper();
+
         public TypeSystemContext TypeSystemContext { get { return _typeSystemContext; } }
         public NodeFactory NodeFactory { get { return _nodeFactory; } }
 

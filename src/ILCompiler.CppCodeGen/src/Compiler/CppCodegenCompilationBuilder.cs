@@ -47,7 +47,7 @@ namespace ILCompiler
             var interopStubManager = new CompilerGeneratedInteropStubManager(_compilationGroup, _context, new InteropStateManager(_context.GeneratedAssembly));
             CppCodegenNodeFactory factory = new CppCodegenNodeFactory(_context, _compilationGroup, _metadataManager, interopStubManager, _nameMangler, _vtableSliceProvider, _dictionaryLayoutProvider);
             DependencyAnalyzerBase<NodeFactory> graph = CreateDependencyGraph(factory);
-            HardwareIntrinsicHelper hardwareIntrinsicHelper = HardwareIntrinsicHelper.Create(_context.Target.Architecture);
+            HardwareIntrinsicHelper hardwareIntrinsicHelper = new DummyHardwareIntrinsicHelper();
 
             return new CppCodegenCompilation(graph, factory, hardwareIntrinsicHelper, _compilationRoots, _ilProvider, _debugInformationProvider, _pinvokePolicy, _logger, _config);
         }
@@ -67,6 +67,35 @@ namespace ILCompiler
         public bool HasOption(string optionName)
         {
             return _options.Contains(optionName);
+        }
+    }
+
+    internal class DummyHardwareIntrinsicHelper : HardwareIntrinsicHelper
+    {
+        public override bool HasKnownSupportLevelAtCompileTime(MethodDesc method)
+        {
+            return true;
+        }
+
+        public override bool IsHardwareIntrinsic(MethodDesc method)
+        {
+            TypeDesc owningType = method.OwningType;
+            if (owningType.IsIntrinsic && owningType is MetadataType mdType)
+            {
+                mdType = (MetadataType)mdType.ContainingType ?? mdType;
+                if (mdType.Namespace == "System.Runtime.Intrinsics.X86" ||
+                    mdType.Namespace == "System.Runtime.Intrinsics.Arm.Arm64")
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        protected override bool TryGetSupportFlag(MethodDesc method, out int bit)
+        {
+            throw new NotImplementedException();
         }
     }
 }

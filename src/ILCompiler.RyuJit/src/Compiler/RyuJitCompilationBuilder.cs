@@ -100,7 +100,19 @@ namespace ILCompiler
                 jitFlagBuilder.Add(CorJitFlag.CORJIT_FLAG_FEATURE_SIMD);
             }
 
-            HardwareIntrinsicHelper hardwareIntrinsicHelper = HardwareIntrinsicHelper.Create(target.Architecture);
+            HardwareIntrinsicHelper hardwareIntrinsicHelper;
+            if (target.Architecture == TargetArchitecture.X86 || target.Architecture == TargetArchitecture.X64)
+            {
+                hardwareIntrinsicHelper = new XArchHardwareIntrinsicHelper();
+            }
+            else if (target.Architecture == TargetArchitecture.ARM64)
+            {
+                hardwareIntrinsicHelper = new Arm64HardwareIntrinsicHelper();
+            }
+            else
+            {
+                throw new NotImplementedException();
+            }
 
             RyuJitCompilationOptions options = 0;
             if (_methodBodyFolding)

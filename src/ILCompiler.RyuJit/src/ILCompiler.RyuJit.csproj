@@ -24,6 +24,7 @@
     <Compile Include="Compiler\DependencyAnalysis\RyuJitNodeFactory.cs" />
     <Compile Include="Compiler\RyuJitCompilation.cs" />
     <Compile Include="Compiler\RyuJitCompilationBuilder.cs" />
+    <Compile Include="Compiler\RyuJitHardwareIntrinsicHelpers.cs" />
     <Compile Include="JitInterface\CorInfoImpl.RyuJit.cs" />
   </ItemGroup>
 

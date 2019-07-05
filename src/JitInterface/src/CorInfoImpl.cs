@@ -673,7 +673,7 @@ namespace Internal.JitInterface
                 // a constant depending on the code generation flags passed to it, but we would like to
                 // do a dynamic check instead.
                 if (!HardwareIntrinsicHelper.IsIsSupportedMethod(method)
-                    || _compilation.HardwareIntrinsicHelper.IsKnownSupportedIntrinsicAtCompileTime(method))
+                    || _compilation.HardwareIntrinsicHelper.HasKnownSupportLevelAtCompileTime(method))
 #endif
                 {
                     result |= CorInfoFlag.CORINFO_FLG_JIT_INTRINSIC;
