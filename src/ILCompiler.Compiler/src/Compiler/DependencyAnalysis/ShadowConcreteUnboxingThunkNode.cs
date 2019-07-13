@@ -20,7 +20,7 @@ namespace ILCompiler.DependencyAnalysis
     /// thunk, as if it was generated. The node acts as a symbol for the canonical thunk
     /// method for convenience.
     /// </summary>
-    internal class ShadowConcreteUnboxingThunkNode : DependencyNodeCore<NodeFactory>, IMethodNode
+    public class ShadowConcreteUnboxingThunkNode : DependencyNodeCore<NodeFactory>, IMethodNode
     {
         private IMethodNode _canonicalThunk;
 

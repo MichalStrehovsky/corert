@@ -41,6 +41,9 @@ namespace ILCompiler.DependencyAnalysis
 
             if (CompilationModuleGroup.ContainsMethodBody(method, false))
             {
+                if (!method.Signature.IsStatic && !method.OwningType.IsValueType)
+                    return new TentativeInstanceMethodNode(new ScannedMethodNode(method));
+
                 return new ScannedMethodNode(method);
             }
             else

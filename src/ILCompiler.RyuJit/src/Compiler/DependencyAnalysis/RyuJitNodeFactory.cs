@@ -42,11 +42,34 @@ namespace ILCompiler.DependencyAnalysis
 
             if (CompilationModuleGroup.ContainsMethodBody(method, false))
             {
+                if (!method.Signature.IsStatic && !method.OwningType.IsValueType)
+                    return new TentativeInstanceMethodNode(new MethodCodeNode(method));
+
                 return new MethodCodeNode(method);
             }
             else
             {
                 return _importedNodeProvider.ImportedMethodCodeNode(this, method, false);
+            }
+        }
+
+        protected override IMethodNode CreateShadowConcreteMethod(MethodKey methodKey)
+        {
+            MethodDesc canonMethod = methodKey.Method.GetCanonMethodTarget(CanonicalFormKind.Specific);
+
+            IMethodNode entrypoint = MethodEntrypoint(canonMethod, methodKey.IsUnboxingStub);
+
+            if (methodKey.IsUnboxingStub)
+            {
+                Debug.Assert(!(entrypoint is TentativeInstanceMethodNode));
+                return new ShadowConcreteUnboxingThunkNode(methodKey.Method, entrypoint);
+            }
+            else
+            {
+                if (entrypoint is TentativeInstanceMethodNode tentativeEntrypoint)
+                    entrypoint = tentativeEntrypoint.RealBody;
+
+                return new ShadowConcreteMethodNode(methodKey.Method, entrypoint);
             }
         }
 

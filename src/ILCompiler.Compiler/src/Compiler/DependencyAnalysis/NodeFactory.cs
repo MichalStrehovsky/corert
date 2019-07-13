@@ -274,19 +274,7 @@ namespace ILCompiler.DependencyAnalysis
                 return new ReflectableMethodNode(method);
             });
 
-            _shadowConcreteMethods = new NodeCache<MethodKey, IMethodNode>(methodKey =>
-            {
-                MethodDesc canonMethod = methodKey.Method.GetCanonMethodTarget(CanonicalFormKind.Specific);
-
-                if (methodKey.IsUnboxingStub)
-                {
-                    return new ShadowConcreteUnboxingThunkNode(methodKey.Method, MethodEntrypoint(canonMethod, true));
-                }
-                else
-                {
-                    return new ShadowConcreteMethodNode(methodKey.Method, MethodEntrypoint(canonMethod));
-                }
-            });
+            _shadowConcreteMethods = new NodeCache<MethodKey, IMethodNode>(CreateShadowConcreteMethod);
 
             _runtimeDeterminedMethods = new NodeCache<MethodDesc, IMethodNode>(method =>
             {
@@ -442,6 +430,20 @@ namespace ILCompiler.DependencyAnalysis
         protected virtual ISymbolNode CreateGenericLookupFromTypeNode(ReadyToRunGenericHelperKey helperKey)
         {
             return new ReadyToRunGenericLookupFromTypeNode(this, helperKey.HelperId, helperKey.Target, helperKey.DictionaryOwner);
+        }
+
+        protected virtual IMethodNode CreateShadowConcreteMethod(MethodKey methodKey)
+        {
+            MethodDesc canonMethod = methodKey.Method.GetCanonMethodTarget(CanonicalFormKind.Specific);
+
+            if (methodKey.IsUnboxingStub)
+            {
+                return new ShadowConcreteUnboxingThunkNode(methodKey.Method, MethodEntrypoint(canonMethod, true));
+            }
+            else
+            {
+                return new ShadowConcreteMethodNode(methodKey.Method, MethodEntrypoint(canonMethod));
+            }
         }
 
         protected virtual IEETypeNode CreateNecessaryTypeNode(TypeDesc type)

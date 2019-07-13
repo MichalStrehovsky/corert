@@ -65,6 +65,10 @@ namespace ILCompiler.DependencyAnalysis
             // Make sure the canonical body gets generated
             dependencies.Add(new DependencyListEntry(CanonicalMethodNode, "Canonical body"));
 
+            IMethodNode factoryEntrypoint = factory.MethodEntrypoint(CanonicalMethodNode.Method);
+            if (factoryEntrypoint != CanonicalMethodNode)
+                dependencies.Add(factoryEntrypoint, "Canonical body");
+
             // Instantiate the runtime determined dependencies of the canonical method body
             // with the concrete instantiation of the method to get concrete dependencies.
             Instantiation typeInst = Method.OwningType.Instantiation;
