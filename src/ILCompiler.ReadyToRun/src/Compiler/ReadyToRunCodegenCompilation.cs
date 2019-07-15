@@ -49,7 +49,7 @@ namespace ILCompiler
             DevirtualizationManager devirtualizationManager,
             JitConfigProvider configProvider,
             string inputFilePath)
-            : base(dependencyGraph, nodeFactory, roots, ilProvider, debugInformationProvider, devirtualizationManager, pInvokePolicy, logger)
+            : base(dependencyGraph, nodeFactory, new ReadyToRunInliningPolicy(nodeFactory.CompilationModuleGroup), roots, ilProvider, debugInformationProvider, devirtualizationManager, pInvokePolicy, logger)
         {
             NodeFactory = nodeFactory;
             SymbolNodeFactory = new ReadyToRunSymbolNodeFactory(nodeFactory);

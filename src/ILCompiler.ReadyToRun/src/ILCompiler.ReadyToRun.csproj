@@ -87,6 +87,7 @@
     <Compile Include="Compiler\DependencyAnalysis\ReadyToRun\SectionStartNode.cs" />
     <Compile Include="Compiler\DependencyAnalysis\TypeAndMethod.cs" />
     <Compile Include="Compiler\ReadyToRunHashCode.cs" />
+    <Compile Include="Compiler\ReadyToRunInliningPolicy.cs" />
     <Compile Include="Compiler\ReadyToRunLibraryRootProvider.cs" />
     <Compile Include="Compiler\ReadyToRunCompilerContext.cs" />
     <Compile Include="Compiler\ReadyToRunCodegenCompilation.cs" />

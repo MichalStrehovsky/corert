@@ -25,6 +25,7 @@ namespace ILCompiler
         internal RyuJitCompilation(
             DependencyAnalyzerBase<NodeFactory> dependencyGraph,
             NodeFactory nodeFactory,
+            InliningPolicy inliningPolicy,
             IEnumerable<ICompilationRootProvider> roots,
             ILProvider ilProvider,
             DebugInformationProvider debugInformationProvider,
@@ -33,7 +34,7 @@ namespace ILCompiler
             DevirtualizationManager devirtualizationManager,
             JitConfigProvider configProvider,
             RyuJitCompilationOptions options)
-            : base(dependencyGraph, nodeFactory, roots, ilProvider, debugInformationProvider, devirtualizationManager, pinvokePolicy, logger)
+            : base(dependencyGraph, nodeFactory, inliningPolicy, roots, ilProvider, debugInformationProvider, devirtualizationManager, pinvokePolicy, logger)
         {
             _jitConfigProvider = configProvider;
             _compilationOptions = options;

@@ -108,7 +108,7 @@ namespace ILCompiler
 
             var jitConfig = new JitConfigProvider(jitFlagBuilder.ToArray(), _ryujitOptions);
             DependencyAnalyzerBase<NodeFactory> graph = CreateDependencyGraph(factory, new ObjectNode.ObjectNodeComparer(new CompilerComparer()));
-            return new RyuJitCompilation(graph, factory, _compilationRoots, _ilProvider, _debugInformationProvider, _pinvokePolicy, _logger, _devirtualizationManager, jitConfig, options);
+            return new RyuJitCompilation(graph, factory, _inliningPolicy, _compilationRoots, _ilProvider, _debugInformationProvider, _pinvokePolicy, _logger, _devirtualizationManager, jitConfig, options);
         }
     }
 }

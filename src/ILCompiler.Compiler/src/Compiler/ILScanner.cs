@@ -32,7 +32,7 @@ namespace ILCompiler
             DebugInformationProvider debugInformationProvider,
             PInvokeILEmitterConfiguration pinvokePolicy,
             Logger logger)
-            : base(dependencyGraph, nodeFactory, roots, ilProvider, debugInformationProvider, null, pinvokePolicy, logger)
+            : base(dependencyGraph, nodeFactory, null, roots, ilProvider, debugInformationProvider, null, pinvokePolicy, logger)
         {
         }
 
@@ -118,6 +118,11 @@ namespace ILCompiler
         public DevirtualizationManager GetDevirtualizationManager()
         {
             return new ScannedDevirtualizationManager(MarkedNodes);
+        }
+
+        public InliningPolicy GetInliningPolicy()
+        {
+            return new ScannedInliningPolicy(MarkedNodes);
         }
 
         private class ScannedVTableProvider : VTableSliceProvider
@@ -224,7 +229,6 @@ namespace ILCompiler
 
         private class ScannedDevirtualizationManager : DevirtualizationManager
         {
-            private HashSet<TypeDesc> _constructedTypes = new HashSet<TypeDesc>();
             private HashSet<TypeDesc> _unsealedTypes = new HashSet<TypeDesc>();
 
             public ScannedDevirtualizationManager(ImmutableArray<DependencyNodeCore<NodeFactory>> markedNodes)
@@ -238,26 +242,12 @@ namespace ILCompiler
                         if (!type.IsInterface)
                         {
                             //
-                            // We collect this information:
-                            //
-                            // 1. What types got allocated
-                            //    This is needed for optimizing codegens that might attempt to devirtualize
-                            //    calls to sealed types. The devirtualization is not allowed to succeed
-                            //    for types that never got allocated because the scanner likely didn't scan
-                            //    the target of the virtual call.
-                            // 2. What types are the base types of other types
-                            //    This is needed for optimizations. We use this information to effectively
-                            //    seal types that are not base types for any other type.
+                            // We collect this information about what types are the base types of other types
+                            // This is needed for optimizations. We use this information to effectively
+                            // seal types that are not base types for any other type.
                             //
 
                             TypeDesc canonType = type.ConvertToCanonForm(CanonicalFormKind.Specific);
-
-                            _constructedTypes.Add(canonType);
-
-                            // Since this is used for the purposes of devirtualization, it's really convenient
-                            // to also have Array<T> for each T[].
-                            if (canonType.IsArray)
-                                _constructedTypes.Add(canonType.GetClosestDefType());
 
                             TypeDesc baseType = canonType.BaseType;
                             bool added = true;
@@ -280,14 +270,6 @@ namespace ILCompiler
                 if (_unsealedTypes.Contains(canonType))
                     return false;
 
-                // We don't want to report types that never got allocated as sealed because that would allow
-                // the codegen to do direct calls to the type's methods. That can potentially lead to codegen
-                // generating calls to methods we never scanned (consider a sealed type that never got allocated
-                // with a virtual method that can be devirtualized because the type is sealed).
-                // Codegen looking at code we didn't scan is never okay.
-                if (!_constructedTypes.Contains(canonType))
-                    return false;
-
                 if (type is MetadataType metadataType)
                 {
                     // Due to how the compiler is structured, we might see "constructed" EETypes for things
@@ -300,14 +282,49 @@ namespace ILCompiler
                 // Everything else can be considered sealed.
                 return true;
             }
+        }
 
-            public override bool IsEffectivelySealed(MethodDesc method)
+        private class ScannedInliningPolicy : InliningPolicy
+        {
+            private readonly HashSet<TypeDesc> _constructedTypes = new HashSet<TypeDesc>();
+
+            public ScannedInliningPolicy(ImmutableArray<DependencyNodeCore<NodeFactory>> markedNodes)
             {
-                // For the same reason as above, don't report methods on unallocated types as sealed.
-                if (!_constructedTypes.Contains(method.OwningType.ConvertToCanonForm(CanonicalFormKind.Specific)))
-                    return false;
+                foreach (var node in markedNodes)
+                {
+                    TypeDesc type = null;
+                    if (node is ConstructedEETypeNode eetypeNode)
+                        type = eetypeNode.Type;
+                    else if (node is CanonicalEETypeNode canonEETypeNode)
+                        type = canonEETypeNode.Type;
 
-                return base.IsEffectivelySealed(method);
+                    if (type != null)
+                    {
+                        _constructedTypes.Add(type);
+
+                        // Since this is used for the purposes of inlining that might happen as a result
+                        // of devirtualization, it's really convenient to also have Array<T> for each T[].
+                        if (type.IsArray)
+                            _constructedTypes.Add(type.GetClosestDefType());
+                    }
+                }
+            }
+
+            public override bool CanInline(MethodDesc callerMethod, MethodDesc calleeMethod)
+            {
+                if (calleeMethod.OwningType.ToString().Contains("Fun`"))
+                    System.Diagnostics.Debugger.Break();
+
+                // We want to limit inlining of instance methods
+                if (!calleeMethod.Signature.IsStatic && !calleeMethod.OwningType.IsValueType)
+                {
+                    if (_constructedTypes.Contains(calleeMethod.OwningType))
+                        return true;
+                    else
+                        return false;
+                }
+
+                return true;
             }
         }
     }

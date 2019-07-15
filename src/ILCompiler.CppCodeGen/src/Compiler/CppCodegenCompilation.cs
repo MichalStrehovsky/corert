@@ -28,7 +28,7 @@ namespace ILCompiler
             PInvokeILEmitterConfiguration pinvokePolicy,
             Logger logger,
             CppCodegenConfigProvider options)
-            : base(dependencyGraph, nodeFactory, GetCompilationRoots(roots, nodeFactory), ilProvider, debugInformationProvider, null, pinvokePolicy, logger)
+            : base(dependencyGraph, nodeFactory, null, GetCompilationRoots(roots, nodeFactory), ilProvider, debugInformationProvider, null, pinvokePolicy, logger)
         {
             Options = options;
         }

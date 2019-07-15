@@ -30,6 +30,7 @@ namespace ILCompiler
         protected DebugInformationProvider _debugInformationProvider = new DebugInformationProvider();
         protected DevirtualizationManager _devirtualizationManager = new DevirtualizationManager();
         protected PInvokeILEmitterConfiguration _pinvokePolicy = new DirectPInvokePolicy();
+        protected InliningPolicy _inliningPolicy = new InliningPolicy();
         protected bool _methodBodyFolding;
 
         public CompilationBuilder(CompilerTypeSystemContext context, CompilationModuleGroup compilationGroup, NameMangler nameMangler)
@@ -79,6 +80,12 @@ namespace ILCompiler
         public CompilationBuilder UseVTableSliceProvider(VTableSliceProvider provider)
         {
             _vtableSliceProvider = provider;
+            return this;
+        }
+
+        public CompilationBuilder UseInliningPolicy(InliningPolicy policy)
+        {
+            _inliningPolicy = policy;
             return this;
         }
 
