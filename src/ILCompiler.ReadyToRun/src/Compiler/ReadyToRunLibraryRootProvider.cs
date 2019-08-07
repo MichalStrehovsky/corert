@@ -4,6 +4,8 @@
 
 using Internal.TypeSystem.Ecma;
 using Internal.TypeSystem;
+using System.Net;
+using System;
 
 namespace ILCompiler
 {
@@ -33,11 +35,21 @@ namespace ILCompiler
                     continue;
                 }
 
-                // If this is not a generic definition, root all methods
-                if (!type.HasInstantiation)
+                var t = type;
+                if (t.HasInstantiation)
                 {
-                    RootMethods(type, "Library module method", rootProvider);
+                    if (Environment.GetEnvironmentVariable("CPAOT_ROOT_CANONICAL_CODE") != "1")
+                        continue;
+
+                    var inst = new TypeDesc[t.Instantiation.Length];
+                    for (int i = 0; i < inst.Length; i++)
+                    {
+                        inst[i] = t.Context.CanonType;
+                    }
+                    t = ((MetadataType)t).MakeInstantiatedType(inst);
                 }
+
+                RootMethods(t, "Library module method", rootProvider);
             }
         }
 
@@ -46,16 +58,30 @@ namespace ILCompiler
             foreach (MethodDesc method in type.GetAllMethods())
             {
                 // Skip methods with no IL and uninstantiated generic methods
-                if (method.IsAbstract || method.HasInstantiation)
+                if (method.IsAbstract)
                     continue;
 
-                if (method.IsInternalCall)
+                if (method.HasInstantiation && Environment.GetEnvironmentVariable("CPAOT_ROOT_CANONICAL_CODE") != "1")
+                    continue;
+
+                MethodDesc m = method;
+                if (m.HasInstantiation)
+                {
+                    var inst = new TypeDesc[m.Instantiation.Length];
+                    for (int i = 0; i < inst.Length; i++)
+                    {
+                        inst[i] = m.Context.CanonType;
+                    }
+                    m = m.MakeInstantiatedMethod(inst);
+                }
+
+                if (m.IsInternalCall)
                     continue;
 
                 try
                 {
-                    CheckCanGenerateMethod(method);
-                    rootProvider.AddCompilationRoot(method, reason);
+                    CheckCanGenerateMethod(m);
+                    rootProvider.AddCompilationRoot(m, reason);
                 }
                 catch (TypeSystemException)
                 {

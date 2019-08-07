@@ -14,6 +14,7 @@ using Internal.TypeSystem.Ecma;
 using ILCompiler.DependencyAnalysis;
 using ILCompiler.DependencyAnalysis.ReadyToRun;
 using ILCompiler.DependencyAnalysisFramework;
+using System;
 
 namespace ILCompiler
 {
@@ -70,6 +71,26 @@ namespace ILCompiler
                 NodeFactory.SetMarkingComplete();
                 ReadyToRunObjectWriter.EmitObject(inputPeReader, outputFile, nodes, NodeFactory);
             }
+
+            int totalGenericCodeSize = 0;
+            foreach (var markedNode in _dependencyGraph.MarkedNodeList)
+            {
+                if (markedNode is MethodWithGCInfo methodNode)
+                {
+                    if (methodNode.IsEmpty)
+                        continue;
+
+                    MethodDesc method = methodNode.Method;
+                    if (method.HasInstantiation || method.OwningType.HasInstantiation)
+                    {
+                        var code = methodNode.GetData(NodeFactory, false);
+                        var fixups = methodNode.GetFixupBlob(NodeFactory);
+                        totalGenericCodeSize += code.Data.Length + fixups?.Length ?? 0;
+                    }
+                }
+            }
+
+            Console.WriteLine($"*** {Path.GetFileName(outputFile)}\t{totalGenericCodeSize}");
         }
 
         internal bool IsInheritanceChainLayoutFixedInCurrentVersionBubble(TypeDesc type)
@@ -107,6 +128,38 @@ namespace ILCompiler
                     continue;
                 }
 
+                if (method.HasInstantiation || method.OwningType.HasInstantiation)
+                {
+                    if (Environment.GetEnvironmentVariable("CPAOT_NO_GENERIC_CODE") == "1")
+                    {
+                        methodCodeNodeNeedingCode.SetCode(new ObjectNode.ObjectData(Array.Empty<byte>(), null, 1, Array.Empty<ISymbolDefinitionNode>()));
+                        methodCodeNodeNeedingCode.InitializeFrameInfos(Array.Empty<FrameInfo>());
+                        continue;
+                    }
+
+                    if (Environment.GetEnvironmentVariable("CPAOT_ONLY_CANONICAL_CODE") == "1")
+                    {
+                        bool nonCanon = false;
+                        foreach (var a in method.Instantiation)
+                        {
+                            if (a != NodeFactory.TypeSystemContext.CanonType)
+                                nonCanon = true;
+                        }
+                        foreach (var a in method.OwningType.Instantiation)
+                        {
+                            if (a != NodeFactory.TypeSystemContext.CanonType)
+                                nonCanon = true;
+                        }
+                        if (nonCanon)
+                        {
+                            methodCodeNodeNeedingCode.SetCode(new ObjectNode.ObjectData(Array.Empty<byte>(), null, 1, Array.Empty<ISymbolDefinitionNode>()));
+                            methodCodeNodeNeedingCode.InitializeFrameInfos(Array.Empty<FrameInfo>());
+                            //Logger.Writer.WriteLine($"Info: Method `{method}` skipped");
+                            continue;
+                        }
+                    }
+                }
+
                 if (Logger.IsVerbose)
                 {
                     string methodName = method.ToString();
@@ -117,14 +170,14 @@ namespace ILCompiler
                 {
                     _corInfo.CompileMethod(methodCodeNodeNeedingCode);
                 }
-                catch (TypeSystemException ex)
+                catch (TypeSystemException)
                 {
                     // If compilation fails, don't emit code for this method. It will be Jitted at runtime
-                    Logger.Writer.WriteLine($"Warning: Method `{method}` was not compiled because: {ex.Message}");
+                    //Logger.Writer.WriteLine($"Warning: Method `{method}` was not compiled because: {ex.Message}");
                 }
-                catch (RequiresRuntimeJitException ex)
+                catch (RequiresRuntimeJitException)
                 {
-                    Logger.Writer.WriteLine($"Info: Method `{method}` was not compiled because `{ex.Message}` requires runtime JIT");
+                    //Logger.Writer.WriteLine($"Info: Method `{method}` was not compiled because `{ex.Message}` requires runtime JIT");
                 }
             }
         }
