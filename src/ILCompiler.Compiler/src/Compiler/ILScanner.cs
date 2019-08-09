@@ -22,11 +22,11 @@ namespace ILCompiler
     /// will need to be generated during a compilation. The result of analysis is a conservative superset of
     /// what methods will be compiled by the actual codegen backend.
     /// </summary>
-    internal sealed class ILScanner : Compilation, IILScanner
+    public sealed class ILScanner : Compilation, IILScanner
     {
-        internal ILScanner(
+        public ILScanner(
             DependencyAnalyzerBase<NodeFactory> dependencyGraph,
-            ILScanNodeFactory nodeFactory,
+            NodeFactory nodeFactory,
             IEnumerable<ICompilationRootProvider> roots,
             ILProvider ilProvider,
             DebugInformationProvider debugInformationProvider,
@@ -41,6 +41,8 @@ namespace ILCompiler
             // we don't need this.
             throw new NotSupportedException();
         }
+
+        int counter;
 
         protected override void ComputeDependencyNodeDependencies(List<DependencyNodeCore<NodeFactory>> obj)
         {
@@ -61,6 +63,9 @@ namespace ILCompiler
 
                 MethodDesc method = methodCodeNodeNeedingCode.Method;
 
+                Console.WriteLine($"{counter} Compiling {method}");
+                counter++;
+
                 try
                 {
                     var importer = new ILImporter(this, method);
@@ -68,10 +73,15 @@ namespace ILCompiler
                 }
                 catch (TypeSystemException ex)
                 {
+#if false
                     // Try to compile the method again, but with a throwing method body this time.
                     MethodIL throwingIL = TypeSystemThrowingILEmitter.EmitIL(method, ex);
                     var importer = new ILImporter(this, method, throwingIL);
                     methodCodeNodeNeedingCode.InitializeDependencies(_nodeFactory, importer.Import());
+#else
+                    _ = ex;
+                    methodCodeNodeNeedingCode.InitializeDependencies(_nodeFactory, Array.Empty<DependencyNodeCore<NodeFactory>.DependencyListEntry>());
+#endif
                 }
             }
         }

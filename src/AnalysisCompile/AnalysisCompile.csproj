@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp2.2</TargetFramework>
+    <Platforms>AnyCPU;x64</Platforms>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ILCompiler.Compiler\src\ILCompiler.Compiler.csproj" />
+    <ProjectReference Include="..\ILCompiler.ReadyToRun\src\ILCompiler.ReadyToRun.csproj" />
+    <ProjectReference Include="..\ILCompiler.TypeSystem\src\ILCompiler.TypeSystem.csproj" />
+
+    <Content Include="..\..\bin\Windows_NT.$(Platform).$(Configuration)\tools\jitinterface.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\..\bin\Windows_NT.$(Platform).$(Configuration)\tools\clrjitilc.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+</Project>

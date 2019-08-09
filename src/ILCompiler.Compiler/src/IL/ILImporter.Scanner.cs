@@ -21,7 +21,7 @@ namespace Internal.IL
         private readonly MethodIL _methodIL;
         private readonly MethodIL _canonMethodIL;
         private readonly ILScanner _compilation;
-        private readonly ILScanNodeFactory _factory;
+        private readonly NodeFactory _factory;
 
         // True if we're scanning a throwing method body because scanning the real body failed.
         private readonly bool _isFallbackBodyCompilation;
@@ -81,7 +81,7 @@ namespace Internal.IL
             }
 
             _compilation = compilation;
-            _factory = (ILScanNodeFactory)compilation.NodeFactory;
+            _factory = compilation.NodeFactory;
             
             _ilBytes = methodIL.GetILBytes();
 
@@ -136,6 +136,7 @@ namespace Internal.IL
                 }
             }
 
+#if false
             if (_canonMethod.IsSynchronized)
             {
                 const string reason = "Synchronized method";
@@ -149,8 +150,8 @@ namespace Internal.IL
                     _dependencies.Add(GetHelperEntrypoint(ReadyToRunHelper.MonitorEnter), reason);
                     _dependencies.Add(GetHelperEntrypoint(ReadyToRunHelper.MonitorExit), reason);
                 }
-                
             }
+#endif
 
             FindBasicBlocks();
             ImportBasicBlocks();
@@ -305,15 +306,16 @@ namespace Internal.IL
 
                     if (owningType.IsMdArray)
                     {
-                        _dependencies.Add(GetHelperEntrypoint(ReadyToRunHelper.NewMultiDimArr_NonVarArg), reason);
+                        //_dependencies.Add(GetHelperEntrypoint(ReadyToRunHelper.NewMultiDimArr_NonVarArg), reason);
                         return;
                     }
                     else
                     {
-                        _dependencies.Add(GetHelperEntrypoint(ReadyToRunHelper.NewObject), reason);
+                        //_dependencies.Add(GetHelperEntrypoint(ReadyToRunHelper.NewObject), reason);
                     }
                 }
 
+#if false
                 if (owningType.IsDelegate)
                 {
                     // If this is a verifiable delegate construction sequence, the previous instruction is a ldftn/ldvirtftn
@@ -342,6 +344,7 @@ namespace Internal.IL
                         }
                     }
                 }
+#endif
             }
 
             if (method.OwningType.IsDelegate && method.Name == "Invoke" &&
@@ -537,7 +540,7 @@ namespace Internal.IL
 
                 if (targetMethod.IsConstructor && targetMethod.OwningType.IsString)
                 {
-                    _dependencies.Add(_factory.StringAllocator(targetMethod), reason);
+                    //_dependencies.Add(_factory.StringAllocator(targetMethod), reason);
                 }
                 else if (exactContextNeedsRuntimeLookup)
                 {
@@ -678,7 +681,7 @@ namespace Internal.IL
                     _dependencies.Add(_factory.RuntimeMethodHandle(runtimeDeterminedMethod), reason);
                 }
 
-                _dependencies.Add(GetHelperEntrypoint(ReadyToRunHelper.GVMLookupForSlot), reason);
+                //_dependencies.Add(GetHelperEntrypoint(ReadyToRunHelper.GVMLookupForSlot), reason);
             }
             else if (method.OwningType.IsInterface)
             {
@@ -760,6 +763,7 @@ namespace Internal.IL
                 _dependencies.Add(_factory.NecessaryTypeSymbol(type), "Unbox");
             }
 
+#if false
             ReadyToRunHelper helper;
             if (opCode == ILOpcode.unbox)
             {
@@ -772,17 +776,18 @@ namespace Internal.IL
             }
 
             _dependencies.Add(GetHelperEntrypoint(helper), "Unbox");
+#endif
         }
 
         private void ImportRefAnyVal(int token)
         {
-            _dependencies.Add(GetHelperEntrypoint(ReadyToRunHelper.GetRefAny), "refanyval");
+            //_dependencies.Add(GetHelperEntrypoint(ReadyToRunHelper.GetRefAny), "refanyval");
         }
 
         private void ImportMkRefAny(int token)
         {
-            _dependencies.Add(GetHelperEntrypoint(ReadyToRunHelper.TypeHandleToRuntimeType), "mkrefany");
-            _dependencies.Add(GetHelperEntrypoint(ReadyToRunHelper.TypeHandleToRuntimeTypeHandle), "mkrefany");
+            //_dependencies.Add(GetHelperEntrypoint(ReadyToRunHelper.TypeHandleToRuntimeType), "mkrefany");
+            //_dependencies.Add(GetHelperEntrypoint(ReadyToRunHelper.TypeHandleToRuntimeTypeHandle), "mkrefany");
         }
 
         private void ImportLdToken(int token)
@@ -819,12 +824,12 @@ namespace Internal.IL
                         else if (IsTypeGetTypeFromHandle(method))
                         {
                             // Codegen will swap this one for GetRuntimeTypeHandle when optimizing
-                            _dependencies.Add(GetHelperEntrypoint(ReadyToRunHelper.GetRuntimeType), "ldtoken");
+                            //_dependencies.Add(GetHelperEntrypoint(ReadyToRunHelper.GetRuntimeType), "ldtoken");
                         }
                     }
                 }
 
-                _dependencies.Add(GetHelperEntrypoint(ReadyToRunHelper.GetRuntimeTypeHandle), "ldtoken");
+                //_dependencies.Add(GetHelperEntrypoint(ReadyToRunHelper.GetRuntimeTypeHandle), "ldtoken");
             }
             else if (obj is MethodDesc)
             {
@@ -838,7 +843,7 @@ namespace Internal.IL
                     _dependencies.Add(_factory.RuntimeMethodHandle(method), "ldtoken");
                 }
 
-                _dependencies.Add(GetHelperEntrypoint(ReadyToRunHelper.GetRuntimeMethodHandle), "ldtoken");
+                //_dependencies.Add(GetHelperEntrypoint(ReadyToRunHelper.GetRuntimeMethodHandle), "ldtoken");
             }
             else
             {
@@ -870,7 +875,7 @@ namespace Internal.IL
                     _dependencies.Add(_factory.RuntimeFieldHandle(field), "ldtoken");
                 }
 
-                _dependencies.Add(GetHelperEntrypoint(ReadyToRunHelper.GetRuntimeFieldHandle), "ldtoken");
+                //_dependencies.Add(GetHelperEntrypoint(ReadyToRunHelper.GetRuntimeFieldHandle), "ldtoken");
             }
         }
 
@@ -916,6 +921,7 @@ namespace Internal.IL
                     return;
                 }
 
+#if false
                 ReadyToRunHelperId helperId;
                 if (field.IsThreadStatic)
                 {
@@ -939,6 +945,7 @@ namespace Internal.IL
                 {
                     _dependencies.Add(_factory.ReadyToRunHelper(helperId, owningType), reason);
                 }
+#endif
             }
         }
 
@@ -1017,22 +1024,22 @@ namespace Internal.IL
 
         private void ImportLoadElement(int token)
         {
-            _dependencies.Add(GetHelperEntrypoint(ReadyToRunHelper.RngChkFail), "ldelem");
+            //_dependencies.Add(GetHelperEntrypoint(ReadyToRunHelper.RngChkFail), "ldelem");
         }
 
         private void ImportLoadElement(TypeDesc elementType)
         {
-            _dependencies.Add(GetHelperEntrypoint(ReadyToRunHelper.RngChkFail), "ldelem");
+            //_dependencies.Add(GetHelperEntrypoint(ReadyToRunHelper.RngChkFail), "ldelem");
         }
 
         private void ImportStoreElement(int token)
         {
-            _dependencies.Add(GetHelperEntrypoint(ReadyToRunHelper.RngChkFail), "stelem");
+            //_dependencies.Add(GetHelperEntrypoint(ReadyToRunHelper.RngChkFail), "stelem");
         }
 
         private void ImportStoreElement(TypeDesc elementType)
         {
-            _dependencies.Add(GetHelperEntrypoint(ReadyToRunHelper.RngChkFail), "stelem");
+            //_dependencies.Add(GetHelperEntrypoint(ReadyToRunHelper.RngChkFail), "stelem");
         }
 
         private void ImportAddressOfElement(int token)
@@ -1046,11 +1053,12 @@ namespace Internal.IL
                     _dependencies.Add(_factory.NecessaryTypeSymbol(elementType), "ldelema");
             }
 
-            _dependencies.Add(GetHelperEntrypoint(ReadyToRunHelper.RngChkFail), "ldelema");
+            //_dependencies.Add(GetHelperEntrypoint(ReadyToRunHelper.RngChkFail), "ldelema");
         }
 
         private void ImportBinaryOperation(ILOpcode opcode)
         {
+#if false
             switch (opcode)
             {
                 case ILOpcode.add_ovf:
@@ -1062,6 +1070,7 @@ namespace Internal.IL
                     _dependencies.Add(GetHelperEntrypoint(ReadyToRunHelper.Overflow), "_ovf");
                     break;
             }
+#endif
         }
 
         private void ImportFallthrough(BasicBlock next)

@@ -5,30 +5,26 @@
 using System;
 using System.Collections.Generic;
 
-using ILCompiler.DependencyAnalysis;
-using ILCompiler.DependencyAnalysisFramework;
-
-using Internal.TypeSystem;
 using Internal.IL;
 
 namespace ILCompiler
 {
-    public sealed class ILScannerBuilder
+    public abstract class ILScannerBuilder
     {
-        private readonly CompilerTypeSystemContext _context;
-        private readonly CompilationModuleGroup _compilationGroup;
-        private readonly NameMangler _nameMangler;
-        private readonly ILProvider _ilProvider;
+        protected readonly CompilerTypeSystemContext _context;
+        protected readonly CompilationModuleGroup _compilationGroup;
+        protected readonly NameMangler _nameMangler;
+        protected readonly ILProvider _ilProvider;
 
         // These need to provide reasonable defaults so that the user can optionally skip
         // calling the Use/Configure methods and still get something reasonable back.
-        private Logger _logger = Logger.Null;
-        private DependencyTrackingLevel _dependencyTrackingLevel = DependencyTrackingLevel.None;
-        private IEnumerable<ICompilationRootProvider> _compilationRoots = Array.Empty<ICompilationRootProvider>();
-        private MetadataManager _metadataManager;
-        private InteropStubManager _interopStubManager = new EmptyInteropStubManager();
+        protected Logger _logger = Logger.Null;
+        protected DependencyTrackingLevel _dependencyTrackingLevel = DependencyTrackingLevel.None;
+        protected IEnumerable<ICompilationRootProvider> _compilationRoots = Array.Empty<ICompilationRootProvider>();
+        protected MetadataManager _metadataManager;
+        protected InteropStubManager _interopStubManager = new EmptyInteropStubManager();
 
-        internal ILScannerBuilder(CompilerTypeSystemContext context, CompilationModuleGroup compilationGroup, NameMangler mangler, ILProvider ilProvider)
+        public ILScannerBuilder(CompilerTypeSystemContext context, CompilationModuleGroup compilationGroup, NameMangler mangler, ILProvider ilProvider)
         {
             _context = context;
             _compilationGroup = compilationGroup;
@@ -61,12 +57,6 @@ namespace ILCompiler
             return this;
         }
 
-        public IILScanner ToILScanner()
-        {
-            var nodeFactory = new ILScanNodeFactory(_context, _compilationGroup, _metadataManager, _interopStubManager, _nameMangler);
-            DependencyAnalyzerBase<NodeFactory> graph = _dependencyTrackingLevel.CreateDependencyGraph(nodeFactory);
-
-            return new ILScanner(graph, nodeFactory, _compilationRoots, _ilProvider, new NullDebugInformationProvider(), _logger);
-        }
+        public abstract IILScanner ToILScanner();
     }
 }

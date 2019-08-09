@@ -1591,6 +1591,6 @@ namespace Internal.JitInterface
         }
 
         private void getAddressOfPInvokeTarget(CORINFO_METHOD_STRUCT_* method, ref CORINFO_CONST_LOOKUP pLookup)
-        { throw new NotImplementedException("getAddressOfPInvokeTarget"); }
+        { throw new RequiresRuntimeJitException($"{MethodBeingCompiled} -> {nameof(getAddressOfPInvokeTarget)}"); }
     }
 }

@@ -9,7 +9,6 @@ using ILCompiler.DependencyAnalysis;
 using ILCompiler.DependencyAnalysisFramework;
 
 using Internal.IL;
-using Internal.TypeSystem;
 
 namespace ILCompiler
 {
@@ -40,6 +39,11 @@ namespace ILCompiler
         protected override ILProvider GetILProvider()
         {
             return _ilProvider;
+        }
+
+        public override ILScannerBuilder GetILScannerBuilder(CompilationModuleGroup compilationGroup = null)
+        {
+            throw new NotImplementedException();
         }
 
         public override ICompilation ToCompilation()

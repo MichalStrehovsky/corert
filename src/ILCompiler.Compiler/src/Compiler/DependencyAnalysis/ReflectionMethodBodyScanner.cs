@@ -166,7 +166,7 @@ namespace ILCompiler.DependencyAnalysis
                         }
                     }
                     break;
-                case "SizeOf" when methodCalled.OwningType.IsSystemRuntimeInteropServicesMarshal() && !methodCalled.HasInstantiation
+                /*case "SizeOf" when methodCalled.OwningType.IsSystemRuntimeInteropServicesMarshal() && !methodCalled.HasInstantiation
                     && methodCalled.Signature.Length == 1 && methodCalled.Signature[0].IsSystemType():
                     {
                         TypeDesc type = tracker.GetLastType();
@@ -177,7 +177,7 @@ namespace ILCompiler.DependencyAnalysis
                             list.Add(factory.StructMarshallingData(defType), "Marshal.SizeOf");
                         }
                     }
-                    break;
+                    break;*/
             }
         }
 

@@ -61,6 +61,9 @@ namespace ILCompiler
         /// </summary>
         public static bool IsFrameworkAssembly(EcmaModule module)
         {
+            if (module.Context.SystemModule == module)
+                return true;
+
             MetadataReader reader = module.MetadataReader;
 
             // We look for [assembly:AssemblyMetadata(".NETFrameworkAssembly", "")]

@@ -273,7 +273,7 @@ namespace ILCompiler
             if (_hasPreciseFieldUsageInformation)
                 return;
 
-            const string reason = "Reflection";
+            //const string reason = "Reflection";
 
             // This logic is applying policy: if a type is reflectable (has a runtime mapping), all of it's fields
             // are reflectable (with a runtime mapping) as well.
@@ -288,12 +288,12 @@ namespace ILCompiler
 
                 if (metadataType.GCStaticFieldSize.AsInt > 0)
                 {
-                    dependencies.Add(factory.TypeGCStaticsSymbol(metadataType), reason);
+                    //dependencies.Add(factory.TypeGCStaticsSymbol(metadataType), reason);
                 }
 
                 if (metadataType.NonGCStaticFieldSize.AsInt > 0 || _typeSystemContext.HasLazyStaticConstructor(metadataType))
                 {
-                    dependencies.Add(factory.TypeNonGCStaticsSymbol(metadataType), reason);
+                    //dependencies.Add(factory.TypeNonGCStaticsSymbol(metadataType), reason);
                 }
 
                 // TODO: tread static fields

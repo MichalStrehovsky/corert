@@ -74,6 +74,7 @@ namespace ILCompiler.DependencyAnalysis
         {
             factory.MetadataManager.GetDependenciesDueToReflectability(ref dependencies, factory, method);
 
+#if false
             if (method.HasInstantiation)
             {
                 ExactMethodInstantiationsNode.GetExactMethodInstantiationDependenciesForMethod(ref dependencies, factory, method);
@@ -89,6 +90,7 @@ namespace ILCompiler.DependencyAnalysis
 
                 GenericTypesTemplateMap.GetTemplateTypeDependencies(ref dependencies, factory, owningTemplateType);
             }
+#endif
 
             factory.InteropStubManager.AddDependeciesDueToPInvoke(ref dependencies, factory, method);
 

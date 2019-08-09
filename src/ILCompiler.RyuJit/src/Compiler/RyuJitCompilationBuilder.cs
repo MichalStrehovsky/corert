@@ -65,6 +65,11 @@ namespace ILCompiler
             return _ilProvider;
         }
 
+        public override ILScannerBuilder GetILScannerBuilder(CompilationModuleGroup compilationGroup = null)
+        {
+            return new RyuJitScannerBuilder(_context, compilationGroup ?? _compilationGroup, _nameMangler, GetILProvider());
+        }
+
         public override ICompilation ToCompilation()
         {
             ArrayBuilder<CorJitFlag> jitFlagBuilder = new ArrayBuilder<CorJitFlag>();

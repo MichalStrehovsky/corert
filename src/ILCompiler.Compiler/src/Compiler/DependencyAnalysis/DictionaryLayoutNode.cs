@@ -145,6 +145,7 @@ namespace ILCompiler.DependencyAnalysis
 
         public override IEnumerable<DependencyListEntry> GetStaticDependencies(NodeFactory factory)
         {
+#if false
             if (factory.MetadataManager.SupportsReflection)
             {
                 // Root the template for the type. In the future, we may want to control this via type reflectability instead.
@@ -157,6 +158,7 @@ namespace ILCompiler.DependencyAnalysis
                     yield return new DependencyListEntry(factory.NativeLayout.TemplateTypeLayout((TypeDesc)_owningMethodOrType), "Type loader template");
                 }
             }
+#endif
 
             if (HasFixedSlots)
             {

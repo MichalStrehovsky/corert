@@ -190,7 +190,9 @@ namespace ILCompiler.DependencyAnalysis
                 return Array.Empty<CombinedDependencyListEntry>();
 
             List<CombinedDependencyListEntry> conditionalDependencies = new List<CombinedDependencyListEntry>();
+#if false
             NativeLayoutSavedVertexNode templateLayout;
+
             if (_dictionaryOwner is MethodDesc)
             {
                 templateLayout = factory.NativeLayout.TemplateMethodLayout((MethodDesc)_dictionaryOwner);
@@ -220,7 +222,8 @@ namespace ILCompiler.DependencyAnalysis
                                                                 "Type loader template"));
                 }
             }
-            
+#endif
+
             return conditionalDependencies;
         }
         
