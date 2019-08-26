@@ -16,6 +16,12 @@ namespace Internal.TypeSystem.Ecma
     {
         public abstract IEnumerable<ILSequencePoint> GetSequencePointsForMethod(int methodToken);
         public abstract IEnumerable<ILLocalVariable> GetLocalVariableNamesForMethod(int methodToken);
+
+        /// <summary>
+        /// Retrieves Source Link JSON string or null if Source Link is not available.
+        /// </summary>
+        public abstract string GetSourceLinkData();
+
         public abstract void Dispose();
     }
 }

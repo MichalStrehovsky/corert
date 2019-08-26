@@ -279,5 +279,10 @@ namespace Internal.TypeSystem.Ecma
             ProbeScopeForLocals(variables, rootScope);
             return variables;
         }
+
+        public override string GetSourceLinkData()
+        {
+            return null;
+        }
     }
 }
