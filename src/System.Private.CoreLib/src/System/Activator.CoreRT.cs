@@ -44,16 +44,12 @@ namespace System
                 IntPtr defaultConstructor = DefaultConstructorOf<T>();
 
                 // Check if we got the marker back.
-                //
-                // TODO: might want to disambiguate the different cases for abstract class, interface, etc.
                 if (defaultConstructor == DefaultConstructorOf<ClassWithMissingConstructor>())
-                    throw new MissingMethodException(SR.Format(SR.MissingConstructor_Name, typeof(T)));
+                    ThrowException(EETypePtr.EETypePtrOf<T>());
 
                 // Grab a pointer to the optimized allocator for the type and call it.
-                // TODO: we need RyuJIT to respect that RawCalliHelper doesn't do fat pointer transform
-                // IntPtr allocator = AllocatorOf<T>();
-                // T t = RawCalliHelper.Call<T>(allocator, EETypePtr.EETypePtrOf<T>().RawValue);
-                T t = (T)RuntimeImports.RhNewObject(EETypePtr.EETypePtrOf<T>());
+                IntPtr allocator = AllocatorOf<T>();
+                T t = RawCalliHelper.Call<T>(allocator, EETypePtr.EETypePtrOf<T>().RawValue);
 
                 try
                 {
@@ -71,6 +67,12 @@ namespace System
                     throw new TargetInvocationException(e);
                 }
             }
+        }
+
+        private static void ThrowException(EETypePtr eetype)
+        {
+            // TODO: might want to disambiguate the different cases for abstract class, interface, etc.
+            throw new MissingMethodException(SR.Format(SR.MissingConstructor_Name, Type.GetTypeFromHandle(new RuntimeTypeHandle(eetype))));
         }
 
         [Intrinsic]
