@@ -100,10 +100,29 @@ namespace ILCompiler
 
             // Virtual methods should be rooted as if they were called virtually
             if (method.IsVirtual)
+            {
+                // Reflectable virtual methods will have native layout generated to support reflection invocation
+                // at runtime. Native layout deals with EETypes so we better be able to build the EEType.
+                CheckSignatureCanBeUsedToBuildNativeLayout(method);
+
                 rootProvider.RootVirtualMethodForReflection(method, reason);
+            }
 
             if (!method.IsAbstract)
                 rootProvider.AddCompilationRoot(method, reason);
+        }
+
+        private static void CheckSignatureCanBeUsedToBuildNativeLayout(MethodDesc method)
+        {
+            var context = (CompilerTypeSystemContext)method.Context;
+            MethodSignature sig = method.Signature;
+
+            context.EnsureLoadableType(sig.ReturnType);
+
+            foreach (var param in sig)
+            {
+                context.EnsureLoadableType(param);
+            }
         }
     }
 }

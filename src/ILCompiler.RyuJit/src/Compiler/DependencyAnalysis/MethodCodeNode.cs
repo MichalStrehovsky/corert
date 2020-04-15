@@ -26,6 +26,9 @@ namespace ILCompiler.DependencyAnalysis
         {
             Debug.Assert(!method.IsAbstract);
             Debug.Assert(method.GetCanonMethodTarget(CanonicalFormKind.Specific) == method);
+
+            ((CompilerTypeSystemContext)method.Context).EnsureLoadableType(method.OwningType);
+
             _method = method;
         }
 

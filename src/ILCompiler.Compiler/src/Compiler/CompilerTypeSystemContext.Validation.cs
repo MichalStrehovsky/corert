@@ -159,8 +159,11 @@ namespace ILCompiler
                     // TODO: validate constraints
                 }
 
-                // Check the type doesn't have bogus MethodImpls or overrides and we can get the finalizer.
-                defType.GetFinalizer();
+                // Ensure that the vtable can be constructed.
+                foreach (MethodDesc decl in defType.EnumAllVirtualSlots())
+                {
+                    defType.FindVirtualFunctionTargetMethodOnObjectType(decl);
+                }
             }
 
             return type;

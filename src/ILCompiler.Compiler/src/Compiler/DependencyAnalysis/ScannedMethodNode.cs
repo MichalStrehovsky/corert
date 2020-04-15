@@ -25,8 +25,12 @@ namespace ILCompiler.DependencyAnalysis
 
         public ScannedMethodNode(MethodDesc method)
         {
+            Debug.Assert(!method.OwningType.IsGenericDefinition);
             Debug.Assert(!method.IsAbstract);
             Debug.Assert(method.GetCanonMethodTarget(CanonicalFormKind.Specific) == method);
+
+            ((CompilerTypeSystemContext)method.Context).EnsureLoadableType(method.OwningType);
+
             _method = method;
         }
 

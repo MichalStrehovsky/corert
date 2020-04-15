@@ -185,7 +185,7 @@ namespace Internal.TypeSystem
         /// <param name="targetMethod"></param>
         /// <param name="objectType"></param>
         /// <returns>The override of the virtual method that should be called</returns>
-        private static MethodDesc FindVirtualFunctionTargetMethodOnObjectType(MethodDesc targetMethod, MetadataType objectType)
+        internal static MethodDesc FindVirtualFunctionTargetMethodOnObjectType(MethodDesc targetMethod, MetadataType objectType)
         {
             // Step 1, convert objectType to uninstantiated form
             MetadataType uninstantiatedType = objectType;
@@ -198,6 +198,7 @@ namespace Internal.TypeSystem
 
             // Step 2, convert targetMethod to method in type hierarchy of uninstantiated form
             targetMethod = targetMethod.GetMethodDefinition();
+            MethodDesc initialTargetMethodDefinition = targetMethod;
             if (uninstantiatedType != objectType)
             {
                 targetMethod = uninstantiatedType.FindMethodOnTypeWithMatchingTypicalMethod(targetMethod);
@@ -218,7 +219,7 @@ namespace Internal.TypeSystem
             {
                 resolutionTarget = objectType.FindMethodOnTypeWithMatchingTypicalMethod(resolutionTarget);
             }
-            if (initialTargetMethod.HasInstantiation)
+            if (initialTargetMethod != initialTargetMethodDefinition)
             {
                 resolutionTarget = resolutionTarget.MakeInstantiatedMethod(initialTargetMethod.Instantiation);
             }
@@ -501,7 +502,7 @@ namespace Internal.TypeSystem
         //    function returns null if the interface method implementation is not defined by the current type in 
         //    the hierarchy.For variance to work correctly, this requires that interfaces be queried in correct order.
         //    See current interface call resolution for details on how that happens.
-        private static MethodDesc ResolveInterfaceMethodToVirtualMethodOnType(MethodDesc interfaceMethod, MetadataType currentType)
+        internal static MethodDesc ResolveInterfaceMethodToVirtualMethodOnType(MethodDesc interfaceMethod, MetadataType currentType)
         {
             if (currentType.IsInterface)
                 return null;

@@ -126,25 +126,34 @@ namespace ILCompiler.DependencyAnalysis
                     TypeDesc typeDefinition = type.GetTypeDefinition();
                     if (typeDefinition != type)
                     {
-                        if (mdManager.CanGenerateMetadata((MetadataType)typeDefinition))
-                        {
-                            dependencies = dependencies ?? new DependencyList();
-                            dependencies.Add(nodeFactory.TypeMetadata((MetadataType)typeDefinition), reason);
-                        }
-
                         foreach (TypeDesc typeArg in type.Instantiation)
                         {
                             GetMetadataDependencies(ref dependencies, nodeFactory, typeArg, reason);
                         }
                     }
-                    else
+
+                    if (mdManager.CanGenerateMetadata((MetadataType)typeDefinition))
                     {
-                        if (mdManager.CanGenerateMetadata((MetadataType)type))
+                        // If the type is not loadable, we skip adding the TypeMetadata node to the graph.
+                        // This will prevent definition metadata from being generated and we get
+                        // unresolvable references instead.
+                        bool isLoadable = false;
+                        try
+                        {
+                            nodeFactory.TypeSystemContext.EnsureLoadableType(typeDefinition);
+                            isLoadable = true;
+                        }
+                        catch (TypeSystemException)
+                        {
+                        }
+
+                        if (isLoadable)
                         {
                             dependencies = dependencies ?? new DependencyList();
-                            dependencies.Add(nodeFactory.TypeMetadata((MetadataType)type), reason);
+                            dependencies.Add(nodeFactory.TypeMetadata((MetadataType)typeDefinition), reason);
                         }
                     }
+
                     break;
             }
         }

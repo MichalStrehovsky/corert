@@ -160,6 +160,9 @@
     <Compile Include="..\..\Common\src\TypeSystem\Common\ByRefType.cs">
       <Link>TypeSystem\Common\ByRefType.cs</Link>
     </Compile>
+    <Compile Include="..\..\Common\src\TypeSystem\Common\CachingVirtualMethodAlgorithm.cs">
+      <Link>TypeSystem\Common\CachingVirtualMethodAlgorithm.cs</Link>
+    </Compile>
     <Compile Include="..\..\Common\src\TypeSystem\Common\GenericParameterDesc.cs">
       <Link>TypeSystem\Common\GenericParameterDesc.cs</Link>
     </Compile>
@@ -293,7 +296,7 @@
       <Link>TypeSystem\Common\MethodDesc.ToString.cs</Link>
     </Compile>
     <Compile Include="..\..\Common\src\TypeSystem\Common\MetadataVirtualMethodAlgorithm.cs">
-      <Link>TypeSystem\Common\StandardVirtualMethodAlgorithm.cs</Link>
+      <Link>TypeSystem\Common\MetadataVirtualMethodAlgorithm.cs</Link>
     </Compile>
     <Compile Include="..\..\Common\src\TypeSystem\Common\TypeDesc.cs">
       <Link>TypeSystem\Common\TypeDesc.cs</Link>

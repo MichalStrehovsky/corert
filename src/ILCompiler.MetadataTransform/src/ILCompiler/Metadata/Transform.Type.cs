@@ -38,7 +38,27 @@ namespace ILCompiler.Metadata
                 return rec;
             }
 
-            switch (type.Category)
+            Cts.TypeFlags category;
+
+            try
+            {
+                category = type.Category;
+            }
+            catch (Cts.TypeSystemException)
+            {
+                // If the type system can't compute the category, the base type hierarchy is not resolvable.
+                // We're generating unusable metadata because the input was unusable, but let's not crash.
+                // Normally the system is trying to prevent the need to generate broken metadata, but
+                // this can still happen for situations like: a "good type" is nested under a type
+                // with an unresolvable base hierarchy - we need the containing type to generate metadata
+                // for the nested type, unfortunately.
+                // The rest of the system still tries to ensure we generate as little of the containing
+                // type as possible.
+                Debug.Assert(type is Cts.DefType);
+                category = Cts.TypeFlags.Unknown;
+            }
+
+            switch (category)
             {
                 case Cts.TypeFlags.SzArray:
                     rec = _types.Create((Cts.ArrayType)type, _initSzArray ?? (_initSzArray = InitializeSzArray));
@@ -63,7 +83,7 @@ namespace ILCompiler.Metadata
                     break;
                 default:
                     {
-                        Debug.Assert(type.IsDefType);
+                        Debug.Assert(category == Cts.TypeFlags.Unknown || type.IsDefType);
 
                         if (!type.IsTypeDefinition)
                         {
