@@ -101,6 +101,11 @@ namespace ILCompiler.DependencyAnalysis
 
         public IEnumerable<DependencyListEntry> InstantiateDependencies(NodeFactory factory, Instantiation typeInstantiation, Instantiation methodInstantiation)
         {
+            if (factory.LazyGenericsPolicy.UsesLazyGenerics(_dictionaryOwner))
+            {
+                return Array.Empty<DependencyListEntry>();
+            }
+
             DependencyList result = new DependencyList();
 
             var lookupContext = new GenericLookupResultContext(_dictionaryOwner, typeInstantiation, methodInstantiation);

@@ -4,6 +4,8 @@
 
 using Internal.TypeSystem;
 
+using Debug = System.Diagnostics.Debug;
+
 namespace ILCompiler
 {
     public abstract class LazyGenericsPolicy
@@ -11,6 +13,15 @@ namespace ILCompiler
         public abstract bool UsesLazyGenerics(MethodDesc method);
         public abstract bool UsesLazyGenerics(TypeDesc type);
         public abstract bool UsesLazyGenerics(MetadataType type);
+        
+        public bool UsesLazyGenerics(TypeSystemEntity entity)
+        {
+            if (entity is MethodDesc method)
+                return UsesLazyGenerics(method);
+
+            Debug.Assert(entity is TypeDesc);
+            return UsesLazyGenerics((TypeDesc)entity);
+        }
     }
 
     public sealed class AttributeDrivenLazyGenericsPolicy : LazyGenericsPolicy

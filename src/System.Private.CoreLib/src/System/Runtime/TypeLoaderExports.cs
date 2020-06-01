@@ -97,6 +97,16 @@ namespace System.Runtime
             return entry.Result;
         }
 
+        public static unsafe IntPtr GenericLookupInSlot(IntPtr context, IntPtr dictionarySignature, int slot)
+        {
+            Entry entry = LookupInCache(s_cache, context, dictionarySignature);
+            if (entry == null)
+            {
+                entry = CacheMiss(context, dictionarySignature);
+            }
+            return ((IntPtr*)entry.Result)[slot];
+        }
+
         public static void GenericLookupAndCallCtor(object arg, IntPtr context, IntPtr signature)
         {
             Entry entry = LookupInCache(s_cache, context, signature);

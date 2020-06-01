@@ -6,7 +6,9 @@ using System;
 
 using ILCompiler.DependencyAnalysis.X64;
 
+using Internal.IL;
 using Internal.TypeSystem;
+using Internal.Text;
 
 using Debug = System.Diagnostics.Debug;
 
@@ -59,8 +61,28 @@ namespace ILCompiler.DependencyAnalysis
             }
         }
 
+        private static Utf8String s_NativeLayoutSignaturePrefix = new Utf8String("__USGDictionarySig_");
+
         protected sealed override void EmitCode(NodeFactory factory, ref X64Emitter encoder, bool relocsOnly)
         {
+            if (factory.LazyGenericsPolicy.UsesLazyGenerics(_dictionaryOwner))
+            {
+                // Find the generic dictionary slot
+                int dictionarySlot = 0;
+                if (!relocsOnly)
+                {
+                    // The concrete slot won't be known until we're emitting data - don't ask for it in relocsOnly.
+                    dictionarySlot = factory.GenericDictionaryLayout(_dictionaryOwner).GetSlotForEntry(_lookupSignature);
+                }
+
+                encoder.EmitLEAQ(encoder.TargetRegister.Arg1,
+                    factory.NativeLayout.NativeLayoutSignature(factory.NativeLayout.DictionarySignature(_dictionaryOwner), s_NativeLayoutSignaturePrefix, _dictionaryOwner));
+                encoder.EmitMOV(encoder.TargetRegister.Arg2, dictionarySlot);
+                // TODO: use factory.HelperEntrypoint
+                encoder.EmitJMP(factory.MethodEntrypoint(factory.TypeSystemContext.SystemModule.GetKnownType("System.Runtime", "TypeLoaderExports").GetKnownMethod("GenericLookupInSlot", null)));
+                return;
+            }
+
             // First load the generic context into the context register.
             EmitLoadGenericContext(factory, ref encoder, relocsOnly);
 
